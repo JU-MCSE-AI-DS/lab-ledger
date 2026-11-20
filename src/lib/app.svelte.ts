@@ -252,3 +252,8 @@ export function applyTheme(t: Theme) {
 }
 
 export const app = new App();
+
+/** Confirm removing a course from this device (shared by Home and Course pages). */
+export function confirmRemoveCourse(c: { title: string; kind: string }): boolean {
+  return confirm(`Remove "${c.title}" from this device?${c.kind === 'google' ? ' The Google Sheet is not deleted.' : ' Local data will be lost.'}`);
+}

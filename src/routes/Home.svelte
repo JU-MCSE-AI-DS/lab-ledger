@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { app } from '../lib/app.svelte';
+  import { app, confirmRemoveCourse } from '../lib/app.svelte';
+  import { hold } from '../lib/hold';
+  import type { Course } from '../lib/model';
   import { go, router } from '../lib/router.svelte';
   import { demoCourse, demoEvents, localCourse } from '../lib/demo';
   import { googleEnabled } from '../lib/google/config';
@@ -27,6 +29,7 @@
   // arrived via a course link that is not on this device
   const missingId = $derived(router.courseId && !app.courses.some((c) => c.id === router.courseId) ? router.courseId : null);
 
+  async function removeOne(c: Course) { if (confirmRemoveCourse(c)) await app.removeCourse(c.id); }
   async function startDemo() {
     const c = demoCourse();
     await app.addCourse(c, demoEvents(c, app.today));
@@ -82,12 +85,16 @@
 
   <section class="space-y-2">
     <h2 class="font-semibold">Your courses</h2>
+    {#if app.courses.length}<p class="text-xs muted">Hold a course, or hover and click ×, to remove it from this device.</p>{/if}
     {#each app.courses as c (c.id)}
-      <button class="card w-full text-left flex items-center gap-2 hover:bg-hush-overlay" onclick={() => go(c.id)}>
-        <span class="font-semibold flex-1">{c.title}</span>
-        <span class="muted text-xs flex items-center gap-1">{#if c.kind === 'google'}<Sheet class="w-3.5 h-3.5" aria-hidden="true" /> Google Sheet{:else}<HardDrive class="w-3.5 h-3.5" aria-hidden="true" /> Local{/if}</span>
-        <span class="muted text-xs ml-3">{c.rolls.filter((r) => r.active).length} rolls</span>
-      </button>
+      <div class="hold-wrap block">
+        <button class="card w-full text-left flex items-center gap-2 hover:bg-hush-overlay select-none" use:hold={() => removeOne(c)} onclick={() => go(c.id)}>
+          <span class="font-semibold flex-1">{c.title}</span>
+          <span class="muted text-xs flex items-center gap-1">{#if c.kind === 'google'}<Sheet class="w-3.5 h-3.5" aria-hidden="true" /> Google Sheet{:else}<HardDrive class="w-3.5 h-3.5" aria-hidden="true" /> Local{/if}</span>
+          <span class="muted text-xs ml-3">{c.rolls.filter((r) => r.active).length} rolls</span>
+        </button>
+        <button class="hold-x" tabindex="-1" aria-label="Remove {c.title} from this device" title="Remove from this device" onclick={() => removeOne(c)}><X aria-hidden="true" /></button>
+      </div>
     {:else}
       <p class="muted text-sm">No courses yet. Create one below{#if !googleEnabled}, or try the demo course to look around{/if}.</p>
     {/each}
