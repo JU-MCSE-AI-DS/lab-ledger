@@ -51,9 +51,11 @@ describe('views', () => {
   it('requests use legacy colours/fonts', () => {
     const t = assignmentTab(course, f, 2)!;
     const reqs = tabRequests(7, t);
-    expect(reqs[0].updateCells.range.sheetId).toBe(7);
-    expect(reqs[0].updateCells.rows).toBeUndefined();
-    const rows = reqs[1].updateCells.rows;
+    // grid must be resized before writing, or updateCells fails past the old last row
+    expect(reqs[0].updateSheetProperties.properties.gridProperties.rowCount).toBe(7);
+    expect(reqs[1].updateCells.range.sheetId).toBe(7);
+    expect(reqs[1].updateCells.rows).toBeUndefined();
+    const rows = reqs[2].updateCells.rows;
     expect(rows).toHaveLength(7);
     const green = rows[1].values[1].userEnteredFormat;
     expect(green.backgroundColor.green).toBeCloseTo(0xea / 255);

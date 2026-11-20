@@ -110,10 +110,11 @@ export function tabRequests(sheetId: number, tab: Tab): any[] {
     })
   }));
   const cols = Math.max(...tab.values.map((r) => r.length), 1);
+  // Resize first: updateCells never grows the grid, and a prior rebuild may have shrunk it.
   const reqs: any[] = [
+    { updateSheetProperties: { properties: { sheetId, gridProperties: { frozenRowCount: 1, rowCount: Math.max(tab.values.length, 2), columnCount: Math.max(cols, 2) } }, fields: 'gridProperties(frozenRowCount,rowCount,columnCount)' } },
     { updateCells: { range: { sheetId }, fields: 'userEnteredValue,userEnteredFormat' } },
-    { updateCells: { start: { sheetId, rowIndex: 0, columnIndex: 0 }, rows, fields: 'userEnteredValue,userEnteredFormat' } },
-    { updateSheetProperties: { properties: { sheetId, gridProperties: { frozenRowCount: 1, rowCount: Math.max(tab.values.length, 2), columnCount: Math.max(cols, 2) } }, fields: 'gridProperties(frozenRowCount,rowCount,columnCount)' } }
+    { updateCells: { start: { sheetId, rowIndex: 0, columnIndex: 0 }, rows, fields: 'userEnteredValue,userEnteredFormat' } }
   ];
   for (let c = 0; c < cols; c++) {
     const max = Math.max(...tab.values.map((r) => (r[c] ?? '').length));
