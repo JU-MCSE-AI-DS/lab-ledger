@@ -2,6 +2,7 @@
   import { LogIn, TriangleAlert } from '@lucide/svelte';
   import { auth } from '../lib/google/auth.svelte';
   import { gate } from '../lib/gate.svelte';
+  import LedgerLoader from './LedgerLoader.svelte';
 
   let busy = $state(false);
   let err = $state('');
@@ -26,8 +27,8 @@
       Lab Ledger can only see the sheets it creates or you open.
     </p>
     <div class="space-y-3">
-      <button class="btn btn-primary btn-lg w-full" disabled={busy} onclick={signIn}>
-        <LogIn aria-hidden="true" /> {busy ? 'Waiting for Google' : 'Continue with Google'}
+      <button class="btn btn-primary btn-lg w-full" disabled={busy} aria-busy={busy} onclick={signIn}>
+        {#if busy}<LedgerLoader />Waiting for Google{:else}<LogIn aria-hidden="true" />Continue with Google{/if}
       </button>
       {#if err}<p class="text-hush-red text-sm" role="alert">{err}</p>{/if}
       <div class="text-center">

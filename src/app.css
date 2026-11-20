@@ -87,6 +87,43 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .hm-done { background: var(--hush-green); }
 .hm-miss { background: color-mix(in srgb, var(--hush-red) 35%, transparent); }
 
+/* Busy buttons stay legible: the loader inside says "working", not "unavailable". */
+button[aria-busy="true"] { cursor: progress; }
+button[aria-busy="true"]:disabled { opacity: 1; }
+
+/* Ledger loader: the app mark's 3x3 grid, cells ticking done in a diagonal wave (--d = row + col). */
+.ll-loader { --c: 5px; --g: 1.5px; position: relative; display: inline-grid; grid-template-columns: repeat(3, var(--c)); gap: var(--g); flex: none; }
+.ll-loader.lg { --c: 14px; --g: 4px; }
+.ll-loader > i { width: var(--c); height: var(--c); border-radius: calc(var(--c) * .24); background: color-mix(in srgb, currentColor 16%, transparent); position: relative; }
+.ll-loader > i::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--loader-fill, var(--hush-green)); opacity: 0; animation: ll-tick 1.5s infinite; animation-delay: calc(var(--d) * 110ms); }
+.btn-primary .ll-loader { --loader-fill: currentColor; }
+
+/* Skeletons: neutral blocks that breathe in the same diagonal wave. */
+.skel { background: color-mix(in srgb, var(--hush-fg) 11%, transparent); border-radius: .375rem; animation: ll-breathe 1.6s ease-in-out infinite both; animation-delay: calc(var(--d, 0) * 70ms); }
+/* Fast loads (IndexedDB is usually milliseconds) never flash a skeleton: it fades in only after 160ms. */
+.skel-reveal { animation: ll-in 260ms 160ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.ll-arrive :is(.hm-done, .hm-miss, .chip, [data-arrive], [data-testid="results"]) { animation: ll-settle 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+
+}
+
+@keyframes ll-tick {
+  0% { opacity: 0; transform: scale(.4); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  16% { opacity: 1; transform: scale(1); animation-timing-function: linear; }
+  52% { opacity: 1; transform: scale(1); animation-timing-function: ease-in; }
+  72%, 100% { opacity: 0; transform: scale(1); }
+}
+@keyframes ll-breathe { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+@keyframes ll-in { from { opacity: 0; } }
+/* Data arrives from mid-breathe opacity: never a fade from blank, never a deep dip for cells caught at peak. */
+@keyframes ll-settle { from { opacity: .7; } }
+@keyframes ll-pulse { 0%, 100% { opacity: .2; } 50% { opacity: .9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* No travelling wave or scaling: every cell pulses together, slowly. */
+  .ll-loader > i::after { animation: ll-pulse 2.4s ease-in-out infinite; }
+  .skel { animation-duration: 2.4s; animation-delay: 0s; }
+  /* Data swaps in as a single colour change, with no opacity step. */
+  .ll-arrive :is(.hm-done, .hm-miss, .chip, [data-arrive], [data-testid="results"]) { animation: none; }
 }
 
 .print-sheet { display: block; }

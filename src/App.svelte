@@ -14,8 +14,13 @@
   import { ClipboardCheck, Grid3x3, Search, BookOpen } from '@lucide/svelte';
   import UndoToast from './components/UndoToast.svelte';
   import PrintOverlay from './components/PrintOverlay.svelte';
+  import LedgerLoader from './components/LedgerLoader.svelte';
+  import CourseSkeleton from './components/CourseSkeleton.svelte';
 
   $effect(() => { if (app.ready) app.load(router.courseId); });
+  // Briefly mark data as freshly arrived so it (and only it) fades in after the skeleton.
+  let arriving = $state(false);
+  $effect(() => { if (!app.loadedFor) return; arriving = true; const t = setTimeout(() => (arriving = false), 400); return () => clearTimeout(t); });
 
   const tabs = [['log', 'Log', ClipboardCheck], ['progress', 'Progress', Grid3x3], ['query', 'Query', Search], ['course', 'Course', BookOpen]] as const;
   function switchCourse(e: Event) {
@@ -25,7 +30,7 @@
 </script>
 
 {#if !app.ready}
-  <div class="p-6 muted">Loading…</div>
+  <div class="h-full grid place-items-center skel-reveal"><LedgerLoader size="lg" label="Loading Lab Ledger" /></div>
 {:else if gate.show}
   <div class="no-print h-full overflow-auto"><SignInGate /></div>
 {:else if !router.courseId || !app.course}
@@ -44,11 +49,14 @@
       </nav>
       <div class="ml-auto flex items-center gap-2"><DateChip /><SyncBadge /><AppMenu /></div>
     </header>
-    <main class="flex-1 min-h-0 overflow-auto">
-      {#if router.tab === 'log'}<Log />
-      {:else if router.tab === 'progress'}<Progress />
-      {:else if router.tab === 'query'}<Query />
-      {:else}<CourseTab />{/if}
+    <main class="flex-1 min-h-0 overflow-auto" class:ll-arrive={arriving}>
+      {#if app.loadedFor !== app.course.id && router.tab !== 'course'}<CourseSkeleton />
+      {:else}
+        {#if router.tab === 'log'}<Log />
+        {:else if router.tab === 'progress'}<Progress />
+        {:else if router.tab === 'query'}<Query />
+        {:else}<CourseTab />{/if}
+      {/if}
     </main>
     <nav class="lg:hidden grid grid-cols-4 border-t border-hush-border bg-hush-surface pb-[env(safe-area-inset-bottom)]">
       {#each tabs as [t, label, Icon]}

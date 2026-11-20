@@ -3,6 +3,7 @@
   import { router, go } from '../lib/router.svelte';
   import { googleEnabled } from '../lib/google/config';
   import { auth } from '../lib/google/auth.svelte';
+  import LedgerLoader from './LedgerLoader.svelte';
   import { Settings, Monitor, Sun, Moon, Check, LogOut, LogIn, LayoutList } from '@lucide/svelte';
 
   const themes: Array<[Theme, string, typeof Monitor]> = [['system', 'System', Monitor], ['light', 'Light', Sun], ['dark', 'Dark', Moon]];
@@ -10,6 +11,7 @@
   let btn = $state<HTMLButtonElement>();
   let open = $state(false);
   let err = $state('');
+  let signing = $state(false);
   let pos = $state({ top: 0, right: 0 });
 
   function place() {
@@ -29,7 +31,7 @@
     const n = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
     items[n]?.focus(); e.preventDefault();
   }
-  async function signIn() { err = ''; try { await auth.signIn(); } catch (e) { err = String((e as Error).message ?? e); } }
+  async function signIn() { err = ''; signing = true; try { await auth.signIn(); } catch (e) { err = String((e as Error).message ?? e); } finally { signing = false; } }
 </script>
 
 <svelte:window onresize={() => open && place()} />
@@ -53,7 +55,7 @@
       <div class="px-2 py-1 text-sm truncate" title={auth.email}>{auth.email}</div>
       <button class="menu-row" onclick={() => { auth.signOut(); close(); go(null); }}><LogOut aria-hidden="true" /><span>Sign out</span></button>
     {:else}
-      <button class="menu-row" onclick={signIn}><LogIn aria-hidden="true" /><span>Sign in with Google</span></button>
+      <button class="menu-row" disabled={signing} aria-busy={signing} onclick={signIn}>{#if signing}<span class="w-[1.125rem] grid place-items-center"><LedgerLoader /></span><span>Waiting for Google</span>{:else}<LogIn aria-hidden="true" /><span>Sign in with Google</span>{/if}</button>
     {/if}
     {#if err}<p class="px-2 text-sm text-hush-red" role="alert">{err}</p>{/if}
   {/if}

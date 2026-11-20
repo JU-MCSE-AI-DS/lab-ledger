@@ -6,6 +6,7 @@
   import { auth } from '../lib/google/auth.svelte';
   import { inviteTA } from '../lib/google/drive';
   import * as sync from '../lib/sync';
+  import LedgerLoader from '../components/LedgerLoader.svelte';
   import { Copy, ExternalLink, UserPlus, Plus, Eye, EyeOff, Trash2, RefreshCw, LogIn, Table2, ScanSearch, X } from '@lucide/svelte';
 
   const course = $derived(app.course!);
@@ -18,6 +19,8 @@
   let newCount = $state(10);
   let invite = $state('');
   let showInactive = $state(false);
+  let doing = $state<'' | 'signin' | 'sync' | 'rebuild' | 'invite'>('');
+  async function run(k: typeof doing, f: () => Promise<unknown>) { doing = k; try { await f(); } catch (e) { msg = String((e as Error).message ?? e); } finally { doing = ''; } }
   const link = $derived(`${location.origin}${import.meta.env.BASE_URL}#/c/${encodeURIComponent(course.id)}`);
   const rolls = $derived([...course.rolls].sort((a, b) => naturalCompare(a.roll, b.roll)));
 
@@ -29,9 +32,8 @@
     if (err) { msg = err; el.value = String(course.assignments.find((a) => a.id === id)!.problems); } else msg = '';
   }
   async function copyLink() { await navigator.clipboard.writeText(link); app.flash('Link copied'); }
-  async function doInvite() {
-    try { await inviteTA(course.id, invite.trim()); app.flash(`Invited ${invite.trim()}`); invite = ''; msg = ''; }
-    catch (e) { msg = String((e as Error).message ?? e); }
+  function doInvite() {
+    return run('invite', async () => { await inviteTA(course.id, invite.trim()); app.flash(`Invited ${invite.trim()}`); invite = ''; msg = ''; });
   }
   async function remove() {
     if (!confirm(`Remove "${course.title}" from this device?${isGoogle ? ' The Google Sheet is not deleted.' : ' Local data will be lost.'}`)) return;
@@ -66,15 +68,15 @@
       </dl>
       {#if app.syncState.error}<p class="text-hush-red text-sm">{app.syncState.error}</p>{/if}
       <div class="flex flex-wrap gap-2">
-        {#if !auth.signedIn}<button class="btn btn-primary" onclick={() => auth.signIn()}><LogIn aria-hidden="true" />Sign in / Reconnect</button>{/if}
-        <button class="btn" onclick={() => sync.syncNow(course.id, true)}><RefreshCw aria-hidden="true" />Sync now</button>
-        <button class="btn" onclick={() => sync.rebuildNow(course.id)}><Table2 aria-hidden="true" />Rebuild sheet views</button>
+        {#if !auth.signedIn}<button class="btn btn-primary" disabled={!!doing} aria-busy={doing === 'signin'} onclick={() => run('signin', () => auth.signIn())}>{#if doing === 'signin'}<LedgerLoader />Waiting for Google{:else}<LogIn aria-hidden="true" />Sign in / Reconnect{/if}</button>{/if}
+        <button class="btn" disabled={!!doing} aria-busy={doing === 'sync'} onclick={() => run('sync', () => sync.syncNow(course.id, true))}>{#if doing === 'sync'}<LedgerLoader />Syncing…{:else}<RefreshCw aria-hidden="true" />Sync now{/if}</button>
+        <button class="btn" disabled={!!doing} aria-busy={doing === 'rebuild'} onclick={() => run('rebuild', () => sync.rebuildNow(course.id))}>{#if doing === 'rebuild'}<LedgerLoader />Rebuilding…{:else}<Table2 aria-hidden="true" />Rebuild sheet views{/if}</button>
       </div>
     </section>
     <section class="card space-y-2">
       <h2 class="font-semibold">Invite a TA</h2>
       <p class="muted text-sm">Shares the Sheet as editor. They open it via the course link.</p>
-      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">TA email</span><input type="email" bind:value={invite} placeholder="ta@example.com" /></label><button class="btn" disabled={!invite.includes('@')} onclick={doInvite}><UserPlus aria-hidden="true" />Invite</button></div>
+      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">TA email</span><input type="email" bind:value={invite} placeholder="ta@example.com" /></label><button class="btn" disabled={!invite.includes('@') || doing === 'invite'} aria-busy={doing === 'invite'} onclick={doInvite}>{#if doing === 'invite'}<LedgerLoader />Inviting…{:else}<UserPlus aria-hidden="true" />Invite{/if}</button></div>
     </section>
   {/if}
 

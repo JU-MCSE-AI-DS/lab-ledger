@@ -41,7 +41,7 @@
     <p class="muted">No assignments yet. Add some in the Course tab.</p>
   {:else if view === 'heat' && cur}
     {@const st = astats.find((x) => x.a === cur.id)}
-    <p class="muted text-sm">{st?.done}/{st?.total} problems done across {rolls.length} rolls ({Math.round((st?.pct ?? 0) * 100)}%). Tap a cell for details.</p>
+    <p class="muted text-sm"><span data-arrive>{st?.done}/{st?.total}</span> problems done across {rolls.length} rolls ({Math.round((st?.pct ?? 0) * 100)}%). Tap a cell for details.</p>
     <div class="!shrink min-h-0 overflow-auto overscroll-contain border border-hush-border rounded-lg bg-hush-bg" data-testid="heatmap">
       <Heatmap a={cur} {rolls} folded={app.folded} onpick={(roll, p) => (picked = { roll, p })} />
     </div>

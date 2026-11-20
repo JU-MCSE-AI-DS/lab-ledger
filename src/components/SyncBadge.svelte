@@ -1,7 +1,8 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
   import { go } from '../lib/router.svelte';
-  import { HardDrive, Check, RefreshCw, CloudUpload, CloudOff, KeyRound, TriangleAlert } from '@lucide/svelte';
+  import { HardDrive, Check, CloudUpload, CloudOff, KeyRound, TriangleAlert } from '@lucide/svelte';
+  import LedgerLoader from './LedgerLoader.svelte';
   const s = $derived(app.syncState);
   type K = 'conflict' | 'local' | 'reconnect' | 'offline' | 'error' | 'syncing' | 'pending' | 'synced';
   const kind = $derived.by((): K => {
@@ -26,7 +27,7 @@
     {:else if kind === 'reconnect'}<KeyRound aria-hidden="true" /><span>Reconnect</span>
     {:else if kind === 'offline'}<CloudOff aria-hidden="true" /><span>Offline</span>
     {:else if kind === 'error'}<TriangleAlert aria-hidden="true" /><span>Sync error</span>
-    {:else if kind === 'syncing'}<RefreshCw aria-hidden="true" class="motion-safe:animate-spin" />
+    {:else if kind === 'syncing'}<LedgerLoader />
     {:else if kind === 'pending'}<CloudUpload aria-hidden="true" />{s.pending}
     {:else}<Check aria-hidden="true" />{/if}
   </button>

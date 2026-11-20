@@ -50,9 +50,9 @@
     <div class="min-w-0 flex-1">
       <div class="flex items-baseline gap-3">
         <h1 class="text-xl font-semibold mono">Roll {roll}</h1>
-        {#if stat}<span class="muted mono text-sm">{stat.done}/{stat.total}</span>{/if}
+        {#if stat}<span data-arrive class="muted mono text-sm">{stat.done}/{stat.total}</span>{/if}
       </div>
-      {#if stat}<div class="mt-1.5 h-1.5 max-w-40 rounded bg-hush-overlay overflow-hidden"><div class="h-full bg-hush-green" style="width:{Math.round(stat.pct * 100)}%"></div></div>{/if}
+      {#if stat}<div class="mt-1.5 h-1.5 max-w-40 rounded bg-hush-overlay overflow-hidden"><div data-arrive class="h-full bg-hush-green" style="width:{Math.round(stat.pct * 100)}%"></div></div>{/if}
     </div>
     {#if showChange}<span class="lg:hidden"><button class="btn btn-sm" onclick={onchange} data-testid="change-roll"><Hash aria-hidden="true" />Change roll</button></span>{/if}
     <button class="btn btn-sm" onclick={share}><Share2 aria-hidden="true" />Share</button>
@@ -63,7 +63,7 @@
         <button class="flex-1 min-w-0 min-h-10 flex items-center gap-2 text-left" onclick={() => (open[a.id] = !(open[a.id] ?? !complete))} aria-expanded={open[a.id] ?? !complete}>
           {#if open[a.id] ?? !complete}<ChevronDown class="icon muted" aria-hidden="true" />{:else}<ChevronRight class="icon muted" aria-hidden="true" />{/if}
           <span class="font-semibold">A{a.id}</span> <span class="muted text-sm truncate">{a.title}</span>
-          <span class="mono text-sm ml-auto inline-flex items-center gap-1 {complete ? 'text-hush-green' : ''}">{#if complete}<Check class="icon" aria-hidden="true" />{/if}{done}/{a.problems}</span>
+          <span data-arrive class="mono text-sm ml-auto inline-flex items-center gap-1 {complete ? 'text-hush-green' : ''}">{#if complete}<Check class="icon" aria-hidden="true" />{/if}{done}/{a.problems}</span>
         </button>
         {#if !complete && (open[a.id] ?? true)}<button class="btn btn-sm" onclick={() => fill(a.id, a.problems)} aria-label="Mark all A{a.id} problems done"><CheckCheck aria-hidden="true" />All</button>{/if}
       </div>

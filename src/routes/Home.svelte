@@ -6,6 +6,7 @@
   import { auth } from '../lib/google/auth.svelte';
   import { createRemoteCourse, openViaPicker, openById } from '../lib/google/course';
   import AppMenu from '../components/AppMenu.svelte';
+  import LedgerLoader from '../components/LedgerLoader.svelte';
   import { Plus, FlaskConical, FolderOpen, Link, X, CloudOff, Sheet, HardDrive } from '@lucide/svelte';
 
   let creating = $state(false);
@@ -21,7 +22,7 @@
   }
   let linkText = $state('');
   let msg = $state('');
-  let busy = $state(false);
+  let busy = $state<'' | 'create' | 'pick' | 'link'>('');
 
   // arrived via a course link that is not on this device
   const missingId = $derived(router.courseId && !app.courses.some((c) => c.id === router.courseId) ? router.courseId : null);
@@ -32,7 +33,7 @@
     go(c.id);
   }
   async function create() {
-    msg = ''; busy = true;
+    msg = ''; busy = 'create';
     try {
       const asg = rows.map((r, i) => ({ id: i + 1, title: r.title.trim() || `Assignment ${i + 1}`, problems: Number(r.problems) }));
       if (!title.trim()) throw new Error('Give the course a title');
@@ -42,12 +43,12 @@
       const c = where === 'google' ? await createRemoteCourse(base) : base;
       await app.addCourse(c);
       go(c.id);
-    } catch (e) { msg = String((e as Error).message ?? e); } finally { busy = false; }
+    } catch (e) { msg = String((e as Error).message ?? e); } finally { busy = ''; }
   }
   async function pick(id?: string) {
-    msg = ''; busy = true;
+    msg = ''; busy = id ? 'link' : 'pick';
     try { const c = id ? await openById(id) : await openViaPicker(); if (c) { await app.addCourse(c); go(c.id); } }
-    catch (e) { msg = String((e as Error).message ?? e); } finally { busy = false; }
+    catch (e) { msg = String((e as Error).message ?? e); } finally { busy = ''; }
   }
   function openLink() {
     const m = /\/c\/([^/?#]+)/.exec(linkText) ?? /^([\w-]{20,})$/.exec(linkText.trim());
@@ -68,14 +69,14 @@
     <div class="card flex items-center gap-3">
       <CloudOff class="shrink-0 muted" aria-hidden="true" />
       <p class="flex-1 text-sm muted">Not signed in. Courses are stored on this device only.</p>
-      <button class="btn btn-sm" disabled={signing} onclick={signIn}>Sign in</button>
+      <button class="btn btn-sm" disabled={signing} aria-busy={signing} onclick={signIn}>{#if signing}<LedgerLoader />{/if}Sign in</button>
     </div>
   {/if}
 
   {#if missingId}
     <div class="card space-y-2">
       <p>This course is not on this device yet.</p>
-      {#if googleEnabled}<button class="btn btn-primary" disabled={busy} onclick={() => pick(missingId)}>Open via Google Picker</button>{:else}<p class="muted text-sm">Google is not configured in this build.</p>{/if}
+      {#if googleEnabled}<button class="btn btn-primary" disabled={!!busy} aria-busy={busy === 'link'} onclick={() => pick(missingId)}>{#if busy === 'link'}<LedgerLoader />Opening course…{:else}Open via Google Picker{/if}</button>{:else}<p class="muted text-sm">Google is not configured in this build.</p>{/if}
     </div>
   {/if}
 
@@ -96,12 +97,12 @@
     <div class="flex flex-wrap gap-2">
       <button class="btn btn-primary" onclick={() => (creating = !creating)}><Plus aria-hidden="true" /> New course</button>
       {#if !googleEnabled}<button class="btn" onclick={startDemo} data-testid="demo-btn"><FlaskConical aria-hidden="true" /> Try demo course</button>{/if}
-      {#if googleEnabled}<button class="btn" disabled={busy} onclick={() => pick()}><FolderOpen aria-hidden="true" /> Open from Google</button>{/if}
+      {#if googleEnabled}<button class="btn" disabled={!!busy} aria-busy={busy === 'pick'} onclick={() => pick()}>{#if busy === 'pick'}<LedgerLoader />Opening…{:else}<FolderOpen aria-hidden="true" />Open from Google{/if}</button>{/if}
     </div>
     {#if googleEnabled}
       <div class="flex gap-2 items-end">
         <label class="field flex-1"><span class="text-xs muted">Course link</span><input bind:value={linkText} placeholder="Paste a course link" /></label>
-        <button class="btn" onclick={openLink}><Link aria-hidden="true" /> Open</button>
+        <button class="btn" disabled={!!busy} aria-busy={busy === 'link'} onclick={openLink}>{#if busy === 'link'}<LedgerLoader />{:else}<Link aria-hidden="true" />{/if}Open</button>
       </div>
       {#if !auth.signedIn}<p class="muted text-sm">You will be asked to sign in with Google.</p>{/if}
     {/if}
@@ -134,7 +135,7 @@
       {:else}
         <p class="muted text-sm">Stored on this device only (Google is not configured).</p>
       {/if}
-      <button class="btn btn-primary" disabled={busy} onclick={create}>Create</button>
+      <button class="btn btn-primary" disabled={!!busy} aria-busy={busy === 'create'} onclick={create}>{#if busy === 'create'}<LedgerLoader />{where === 'google' ? 'Creating sheet…' : 'Creating…'}{:else}Create{/if}</button>
     </section>
   {/if}
 </div>
