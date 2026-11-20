@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
   import { go } from '../lib/router.svelte';
-  import { HardDrive, Check, CloudUpload, CloudOff, KeyRound, TriangleAlert } from '@lucide/svelte';
+  import { HardDrive, CloudCheck, CloudUpload, CloudOff, CloudExclamationPoint, KeyRound, TriangleAlert } from '@lucide/svelte';
   import LedgerLoader from './LedgerLoader.svelte';
   const s = $derived(app.syncState);
   type K = 'conflict' | 'local' | 'reconnect' | 'offline' | 'error' | 'syncing' | 'pending' | 'synced';
@@ -26,9 +26,9 @@
     {:else if kind === 'local'}<HardDrive aria-hidden="true" /><span>Local</span>
     {:else if kind === 'reconnect'}<KeyRound aria-hidden="true" /><span>Reconnect</span>
     {:else if kind === 'offline'}<CloudOff aria-hidden="true" /><span>Offline</span>
-    {:else if kind === 'error'}<TriangleAlert aria-hidden="true" /><span>Sync error</span>
+    {:else if kind === 'error'}<CloudExclamationPoint aria-hidden="true" /><span>Sync error</span>
     {:else if kind === 'syncing'}<LedgerLoader />
     {:else if kind === 'pending'}<CloudUpload aria-hidden="true" />{s.pending}
-    {:else}<Check aria-hidden="true" />{/if}
+    {:else}<CloudCheck aria-hidden="true" />{/if}
   </button>
 {/if}

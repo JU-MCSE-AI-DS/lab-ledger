@@ -12,7 +12,7 @@
   import HistoryLine from '../components/HistoryLine.svelte';
   import { buildHistory } from '../lib/history';
   import LedgerLoader from '../components/LedgerLoader.svelte';
-  import { Copy, ExternalLink, UserPlus, Plus, Eye, EyeOff, Trash2, RefreshCw, LogIn, Table2, ScanSearch, X, History } from '@lucide/svelte';
+  import { Copy, ExternalLink, UserPlus, Plus, Eye, EyeOff, Trash2, CloudSync, LogIn, Table2, ScanSearch, X, History } from '@lucide/svelte';
 
   const course = $derived(app.course!);
   const isGoogle = $derived(course.kind === 'google');
@@ -99,7 +99,7 @@
       {#if app.syncState.error}<p class="text-hush-red text-sm">{app.syncState.error}</p>{/if}
       <div class="flex flex-wrap gap-2">
         {#if !auth.signedIn}<button class="btn btn-primary" disabled={!!doing} aria-busy={doing === 'signin'} onclick={() => run('signin', () => auth.signIn())}>{#if doing === 'signin'}<LedgerLoader />Waiting for Google{:else}<LogIn aria-hidden="true" />Sign in / Reconnect{/if}</button>{/if}
-        <button class="btn" disabled={!!doing} aria-busy={doing === 'sync'} onclick={() => run('sync', () => sync.syncNow(course.id, true))}>{#if doing === 'sync'}<LedgerLoader />Syncing…{:else}<RefreshCw aria-hidden="true" />Sync now{/if}</button>
+        <button class="btn" disabled={!!doing} aria-busy={doing === 'sync'} onclick={() => run('sync', () => sync.syncNow(course.id, true))}>{#if doing === 'sync'}<LedgerLoader />Syncing…{:else}<CloudSync aria-hidden="true" />Sync now{/if}</button>
         <button class="btn" disabled={!!doing} aria-busy={doing === 'rebuild'} onclick={() => run('rebuild', () => sync.rebuildNow(course.id))}>{#if doing === 'rebuild'}<LedgerLoader />Rebuilding…{:else}<Table2 aria-hidden="true" />Rebuild sheet views{/if}</button>
       </div>
     </section>
