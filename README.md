@@ -45,7 +45,9 @@ The app uses the browser-only OAuth token flow with the scopes `drive.file openi
    - `https://<your-github-user>.github.io`
 
    (Origins have no path. No redirect URIs are needed.) Copy the Client ID.
-5. Create credentials > **API key**. Restrict it: Application restrictions = Websites with referrers `http://localhost:5173/*` and `https://<your-github-user>.github.io/*`; API restrictions = **Google Picker API** only. Copy the key.
+5. Create credentials > **API key**. Restrict it: Application restrictions = Websites with referrers `http://localhost:5173/*`, `https://<your-github-user>.github.io/*` and `https://docs.google.com/*`; API restrictions = **Google Picker API** only. Copy the key.
+
+   The `docs.google.com` entry is required for Firefox (and other browsers that partition third-party cookies). There the Picker first asks to "Allow cookies", then reloads its own iframe. That reload sends `docs.google.com` as the referrer, so without the entry the Picker fails with "The API developer key is invalid".
 6. The **App ID** is the numeric project number (Cloud console > Dashboard > Project number).
 7. Locally, put the three values in `.env.local` (see `.env.example`):
    ```
