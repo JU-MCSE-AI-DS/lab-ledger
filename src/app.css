@@ -73,6 +73,9 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .seg > button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 .seg > button:not([aria-pressed="true"]):hover { background: var(--hush-overlay); }
 
+/* Labelled field: <label class="field"><span class="text-xs muted">Label</span><input …></label> */
+.field { display: flex; flex-direction: column; align-items: stretch; gap: .25rem; min-width: 0; }
+
 .card { background: var(--hush-surface); border: 1px solid var(--hush-border); border-radius: .75rem; padding: .85rem; }
 .muted { color: var(--hush-muted-text); }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }

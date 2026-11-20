@@ -60,7 +60,7 @@
   {#if !auth.email}
     {#if !googleEnabled}<hr class="my-1 border-hush-border" />{/if}
     <div class="px-2 pb-1 pt-1 space-y-1">
-      <label class="text-sm muted block" for="menu-email">Name or email on your log entries</label>
+      <label class="text-xs muted block" for="menu-email">Name or email on your log entries</label>
       <input id="menu-email" class="w-full" value={app.email} onchange={(e) => app.setEmail((e.target as HTMLInputElement).value.trim() || 'me@local')} />
     </div>
   {/if}
@@ -77,7 +77,6 @@
     width: min(18rem, calc(100vw - 1rem)); max-height: calc(100dvh - 4.5rem); overflow: auto;
     background: var(--hush-surface); color: var(--hush-fg);
     border: 1px solid var(--hush-border); border-radius: .75rem;
-    box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--hush-fg) 22%, transparent);
   }
   .menu-row {
     display: flex; align-items: center; gap: .6rem; width: 100%; min-height: 2.5rem;

@@ -99,8 +99,8 @@
       {#if googleEnabled}<button class="btn" disabled={busy} onclick={() => pick()}><FolderOpen aria-hidden="true" /> Open from Google</button>{/if}
     </div>
     {#if googleEnabled}
-      <div class="flex gap-2 items-center">
-        <input class="flex-1" bind:value={linkText} placeholder="Paste a course link" aria-label="Course link" />
+      <div class="flex gap-2 items-end">
+        <label class="field flex-1"><span class="text-xs muted">Course link</span><input bind:value={linkText} placeholder="Paste a course link" /></label>
         <button class="btn" onclick={openLink}><Link aria-hidden="true" /> Open</button>
       </div>
       {#if !auth.signedIn}<p class="muted text-sm">You will be asked to sign in with Google.</p>{/if}
@@ -111,10 +111,11 @@
   {#if creating}
     <section class="card space-y-3">
       <h2 class="font-semibold">New course</h2>
-      <input class="w-full" bind:value={title} placeholder="Title, e.g. MCA Programming Lab (C) 2025-27" aria-label="Title" />
-      <input class="w-full" bind:value={rolls} placeholder="Rolls: 1-58, 102" aria-label="Rolls" />
+      <label class="field"><span class="text-xs muted">Title</span><input bind:value={title} placeholder="e.g. MCA Programming Lab (C) 2025-27" /></label>
+      <label class="field"><span class="text-xs muted">Rolls</span><input bind:value={rolls} placeholder="1-58, 102" /></label>
       <div class="space-y-1.5">
         <p class="text-sm muted">Assignments</p>
+        <div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-20">Problems</span>{#if rows.length > 1}<span class="w-10"></span>{/if}</div>
         {#each rows as r, i}
           <div class="flex gap-2">
             <span class="mono w-8 h-10 flex items-center">A{i + 1}</span>

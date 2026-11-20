@@ -60,7 +60,6 @@
     background: var(--hush-surface);
     border: 1px solid var(--hush-border);
     border-radius: .75rem;
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--hush-bg) 40%, black 25%);
   }
   .warn-dialog::backdrop { background: color-mix(in srgb, var(--hush-bg) 70%, transparent); }
 </style>

@@ -3,7 +3,7 @@
 </script>
 {#if app.toast}
   {#key app.toast.id}
-    <div role="status" class="no-print fixed left-1/2 -translate-x-1/2 bottom-36 lg:bottom-20 z-40 bg-hush-fg text-hush-bg rounded-xl shadow-lg px-4 py-2.5 flex items-center gap-3 overflow-hidden max-w-[calc(100vw-1.5rem)]">
+    <div role="status" class="no-print fixed left-1/2 -translate-x-1/2 bottom-36 lg:bottom-20 z-40 bg-hush-fg text-hush-bg rounded-xl px-4 py-2.5 flex items-center gap-3 overflow-hidden max-w-[calc(100vw-1.5rem)]">
       <span>{app.toast.msg}</span>
       {#if app.toast.batch.length}
         <button class="font-bold underline underline-offset-2" onclick={() => app.undoToast()}>Undo</button>

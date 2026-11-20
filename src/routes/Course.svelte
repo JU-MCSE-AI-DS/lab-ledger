@@ -46,10 +46,10 @@
 
   <section class="card space-y-2">
     <h1 class="font-semibold text-base">Course</h1>
-    <div class="flex gap-2"><input class="flex-1" bind:value={title} aria-label="Course title" /><button class="btn" onclick={() => app.renameCourse(title)} disabled={title === course.title}>Rename</button></div>
+    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course title</span><input bind:value={title} /></label><button class="btn" onclick={() => app.renameCourse(title)} disabled={title === course.title}>Rename</button></div>
     <p class="muted text-sm">{isGoogle ? 'Stored in a Google Sheet.' : 'Stored on this device only (local course).'}</p>
     {#if isGoogle}
-      <div class="flex gap-2 items-center"><input class="flex-1 mono text-xs" readonly value={link} aria-label="Course link" /><button class="btn" onclick={copyLink}><Copy aria-hidden="true" />Copy link</button></div>
+      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course link</span><input class="mono text-xs" readonly value={link} /></label><button class="btn" onclick={copyLink}><Copy aria-hidden="true" />Copy link</button></div>
       <div class="flex gap-2"><a class="btn" href={`https://docs.google.com/spreadsheets/d/${course.id}`} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" />Open Sheet</a></div>
     {/if}
     {#if !googleEnabled}<p class="muted text-sm">Google sync is not configured in this build (demo / local mode).</p>{/if}
@@ -74,7 +74,7 @@
     <section class="card space-y-2">
       <h2 class="font-semibold">Invite a TA</h2>
       <p class="muted text-sm">Shares the Sheet as editor. They open it via the course link.</p>
-      <div class="flex gap-2"><input class="flex-1" type="email" bind:value={invite} placeholder="ta@example.com" aria-label="TA email" /><button class="btn" disabled={!invite.includes('@')} onclick={doInvite}><UserPlus aria-hidden="true" />Invite</button></div>
+      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">TA email</span><input type="email" bind:value={invite} placeholder="ta@example.com" /></label><button class="btn" disabled={!invite.includes('@')} onclick={doInvite}><UserPlus aria-hidden="true" />Invite</button></div>
     </section>
   {/if}
 
@@ -94,6 +94,7 @@
 
   <section class="card space-y-2">
     <h2 class="font-semibold">Assignments</h2>
+    {#if course.assignments.length}<div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-16">Problems</span><span class="btn btn-sm invisible !min-h-0 !h-0 !border-0"><EyeOff />Hide</span></div>{/if}
     {#each course.assignments as a (a.id)}
       <div class="flex items-center gap-2 {a.active ? '' : 'opacity-50'}">
         <span class="mono w-8">A{a.id}</span>
@@ -102,16 +103,17 @@
         <button class="btn btn-sm" onclick={() => app.updateAssignment(a.id, { active: !a.active })}>{#if a.active}<EyeOff aria-hidden="true" />Hide{:else}<Eye aria-hidden="true" />Show{/if}</button>
       </div>
     {/each}
-    <div class="flex gap-2 pt-1">
-      <input class="flex-1" bind:value={newTitle} placeholder="New assignment title" aria-label="New assignment title" />
-      <input class="w-16 mono" type="number" min="1" bind:value={newCount} aria-label="New assignment problems" />
+    <div class="flex gap-2 pt-1 items-end">
+      <span class="w-8 shrink-0"></span>
+      <label class="field flex-1"><span class="text-xs muted">New assignment title</span><input bind:value={newTitle} /></label>
+      <label class="field w-16"><span class="text-xs muted">Problems</span><input class="mono" type="number" min="1" bind:value={newCount} /></label>
       <button class="btn" onclick={addAssignment}><Plus aria-hidden="true" />Add</button>
     </div>
   </section>
 
   <section class="card space-y-2">
     <h2 class="font-semibold">Rolls <span class="muted text-sm font-normal">({course.rolls.filter((r) => r.active).length} active)</span></h2>
-    <div class="flex gap-2"><input class="flex-1" bind:value={rollExpr} placeholder="add: 1-58, 102" aria-label="Add rolls" /><button class="btn" onclick={addRolls}><Plus aria-hidden="true" />Add</button></div>
+    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Add rolls</span><input bind:value={rollExpr} placeholder="1-58, 102" /></label><button class="btn" onclick={addRolls}><Plus aria-hidden="true" />Add</button></div>
     <label class="text-sm muted flex gap-2 items-center"><input type="checkbox" bind:checked={showInactive} /> Show all (to deactivate / reactivate)</label>
     {#if showInactive}
       <div class="flex flex-wrap gap-1.5">

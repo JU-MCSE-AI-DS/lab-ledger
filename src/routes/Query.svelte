@@ -41,24 +41,24 @@
 
 <div class="p-3 space-y-3 max-w-3xl mx-auto">
   <div class="card space-y-2">
-    <div class="flex flex-wrap gap-2 items-center">
-      <select bind:value={preset} aria-label="Preset">
+    <div class="flex flex-wrap gap-2 items-end">
+      <label class="field"><span class="text-xs muted">Preset</span><select bind:value={preset}>
         <option value="remaining">Remaining for roll</option>
         <option value="missing">Missing assignment…</option>
         <option value="lag">Lagging</option>
         <option value="rank">Rank</option>
         <option value="done">Done…</option>
         <option value="custom">Custom</option>
-      </select>
+      </select></label>
       {#if preset === 'missing' || preset === 'done' || preset === 'lag'}
-        <select bind:value={pa} aria-label="Assignment"><option value="">All A</option>{#each asgs as a}<option value={String(a.id)}>A{a.id}</option>{/each}</select>
+        <label class="field"><span class="text-xs muted">Assignment</span><select bind:value={pa}><option value="">All A</option>{#each asgs as a}<option value={String(a.id)}>A{a.id}</option>{/each}</select></label>
       {/if}
-      {#if (preset === 'missing' || preset === 'done') && pa}<input bind:value={probs} placeholder="problems 5-8" class="w-32" aria-label="Problems" />{/if}
-      {#if preset === 'remaining' || preset === 'missing' || preset === 'done'}<input bind:value={proll} placeholder="rolls 1-30" class="w-28" inputmode="numeric" aria-label="Rolls" />{/if}
-      {#if preset === 'lag'}<label class="text-sm muted">behind by &gt; <input type="number" min="0" bind:value={lagN} class="w-16" aria-label="Lag threshold" /></label>{/if}
-      {#if preset === 'done'}<input type="date" bind:value={pdate} aria-label="On date" />{/if}
+      {#if (preset === 'missing' || preset === 'done') && pa}<label class="field w-32"><span class="text-xs muted">Problems</span><input bind:value={probs} placeholder="5-8" /></label>{/if}
+      {#if preset === 'remaining' || preset === 'missing' || preset === 'done'}<label class="field w-28"><span class="text-xs muted">Rolls</span><input bind:value={proll} placeholder="1-30" inputmode="numeric" /></label>{/if}
+      {#if preset === 'lag'}<label class="field w-24"><span class="text-xs muted">Behind by &gt;</span><input type="number" min="0" bind:value={lagN} /></label>{/if}
+      {#if preset === 'done'}<label class="field"><span class="text-xs muted">On date</span><input type="date" bind:value={pdate} /></label>{/if}
     </div>
-    <input class="w-full mono text-sm" bind:value={text} oninput={() => { preset = 'custom'; }} spellcheck="false" autocapitalize="off" aria-label="Query" data-testid="query-input" />
+    <label class="field"><span class="text-xs muted">Query</span><input class="mono text-sm" bind:value={text} oninput={() => { preset = 'custom'; }} spellcheck="false" autocapitalize="off" data-testid="query-input" /></label>
     <details class="text-sm muted">
       <summary>Syntax</summary>
       <ul class="mono mt-1 space-y-0.5 leading-relaxed">

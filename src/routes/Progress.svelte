@@ -24,15 +24,15 @@
 </script>
 
 <div class="h-full flex flex-col gap-3 p-3 max-w-5xl mx-auto [&>*]:shrink-0">
-  <div class="flex items-center gap-2 flex-wrap">
+  <div class="flex items-end gap-2 flex-wrap">
     <div class="seg" role="group" aria-label="View">
       <button aria-pressed={view === 'heat'} onclick={() => (view = 'heat')}><Grid3x3 aria-hidden="true" class="icon" />Heatmap</button>
       <button aria-pressed={view === 'summary'} onclick={() => (view = 'summary')}><Table2 aria-hidden="true" class="icon" />Summary</button>
     </div>
     {#if view === 'heat' && cur}
-      <select aria-label="Assignment" value={cur.id} onchange={(e) => { aId = Number((e.target as HTMLSelectElement).value); picked = null; }}>
+      <label class="field"><span class="text-xs muted">Assignment</span><select value={cur.id} onchange={(e) => { aId = Number((e.target as HTMLSelectElement).value); picked = null; }}>
         {#each asgs as a}<option value={a.id}>A{a.id} {a.title}</option>{/each}
-      </select>
+      </select></label>
     {/if}
     <button class="btn ml-auto" onclick={() => (app.printOpen = true)}><Printer aria-hidden="true" />Print</button>
   </div>
