@@ -2,13 +2,13 @@ import { fold } from './fold';
 import { type Assignment, type Course, type LogEvent, uuid } from './model';
 import type { Op } from './notation';
 import { parseRolls } from './notation';
-import { buildEvents, revertEvents, validateAssignmentChange } from './ops';
+import { buildEvents, revertEvents, validateAssignmentChange, rollsWithHistory } from './ops';
 import * as store from './store';
 import { router } from './router.svelte';
 import * as sync from './sync';
 
 export type Theme = 'system' | 'light' | 'dark';
-export interface Toast { msg: string; batch: LogEvent[]; until: number; id: number }
+export interface Toast { msg: string; batch: LogEvent[]; until: number; id: number; undo?: () => Promise<void> }
 export interface SyncState {
   status: 'idle' | 'syncing' | 'offline' | 'reconnect' | 'error';
   pending: number;
@@ -126,16 +126,17 @@ class App {
     return fresh;
   }
 
-  flash(msg: string, batch: LogEvent[] = []) {
-    this.toast = { msg, batch, until: Date.now() + 5000, id: ++this.toastSeq };
+  flash(msg: string, batch: LogEvent[] = [], undo?: () => Promise<void>) {
+    this.toast = { msg, batch, undo, until: Date.now() + 5000, id: ++this.toastSeq };
     const id = this.toast.id;
-    setTimeout(() => { if (this.toast?.id === id) this.toast = null; }, batch.length ? 5000 : 2200);
+    setTimeout(() => { if (this.toast?.id === id) this.toast = null; }, batch.length || undo ? 5000 : 2200);
   }
 
   async undoToast() {
     const t = this.toast;
-    if (!t || !t.batch.length) return;
+    if (!t || !(t.batch.length || t.undo)) return;
     this.toast = null;
+    if (t.undo) { await t.undo(); return; }
     const rev = revertEvents(t.batch, this.events, this.ctx());
     await this.append(rev);
     this.flash('Reverted');
@@ -189,6 +190,29 @@ class App {
     const r = next.rolls.find((x) => x.roll === roll); if (!r) return;
     r.active = active;
     await this.saveCourse(next, `roll ${roll} ${active ? 'activated' : 'deactivated'}`);
+  }
+  /** Delete rolls that have no logged progress. Returns what was removed/skipped. */
+  async deleteRolls(rolls: string[]): Promise<{ removed: string[]; skipped: string[] }> {
+    const c = this.course; if (!c) return { removed: [], skipped: [] };
+    const hist = rollsWithHistory(this.events);
+    const inRoster = new Set(c.rolls.map((r) => r.roll));
+    const want = [...new Set(rolls)].filter((r) => inRoster.has(r));
+    const skipped = want.filter((r) => hist.has(r));
+    const del = new Set(want.filter((r) => !hist.has(r)));
+    if (!del.size) return { removed: [], skipped };
+    const next = structuredClone($state.snapshot(c)) as Course;
+    const gone = next.rolls.filter((r) => del.has(r.roll));
+    next.rolls = next.rolls.filter((r) => !del.has(r.roll));
+    const list = gone.map((r) => r.roll).join(', ');
+    await this.saveCourse(next, `rolls −${gone.length} (${list})`);
+    this.flash(`Deleted ${gone.length} roll${gone.length === 1 ? '' : 's'}`, [], async () => {
+      const cur = this.course; if (!cur || cur.id !== c.id) return;
+      const back = structuredClone($state.snapshot(cur)) as Course;
+      for (const g of gone) if (!back.rolls.some((r) => r.roll === g.roll)) back.rolls.push({ ...g });
+      await this.saveCourse(back, `rolls restored (${list})`);
+      this.flash('Rolls restored');
+    });
+    return { removed: gone.map((r) => r.roll), skipped };
   }
   async addAssignment(title: string, problems: number): Promise<string | null> {
     const c = this.course; if (!c) return 'No course';

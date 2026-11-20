@@ -138,3 +138,14 @@ button[aria-busy="true"]:disabled { opacity: 1; }
   .print-page:last-child { break-after: auto; }
   .hm-done, .hm-miss, th, td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Hover-to-delete x for hold targets (desktop only; touch uses press-and-hold) */
+.hold-wrap { position: relative; display: inline-block; }
+.hold-wrap.block { display: block; }
+.hold-x { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .hold-x { position: absolute; top: -8px; right: -8px; z-index: 1; width: 22px; height: 22px; border-radius: 9999px; align-items: center; justify-content: center; background: var(--hush-red); color: var(--hush-bg); border: 0; padding: 0; opacity: 0; pointer-events: none; }
+  .hold-x svg { width: 14px; height: 14px; stroke-width: 3; }
+  .hold-wrap:hover > .hold-x, .hold-wrap:focus-within > .hold-x { display: inline-flex; opacity: 1; pointer-events: auto; }
+  .hold-x:hover { filter: brightness(1.15); }
+}

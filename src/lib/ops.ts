@@ -70,3 +70,10 @@ export function validateAssignmentChange(course: Course, events: LogEvent[], a: 
   if (problems < hi) return `Cannot shrink below highest logged problem (${hi})`;
   return null;
 }
+
+/** Rolls referenced by any done/undo event (even if net-undone). These cannot be deleted. */
+export function rollsWithHistory(events: LogEvent[]): Set<string> {
+  const s = new Set<string>();
+  for (const e of events) if (e.action === 'done' || e.action === 'undo') s.add(e.roll);
+  return s;
+}

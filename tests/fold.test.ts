@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fold } from '../src/lib/fold';
-import { buildEvents, revertEvents, validateAssignmentChange } from '../src/lib/ops';
+import { buildEvents, revertEvents, validateAssignmentChange, rollsWithHistory } from '../src/lib/ops';
 import { ev, makeCourse } from './helpers';
 
 describe('fold', () => {
@@ -105,4 +105,17 @@ describe('ops', () => {
     expect(validateAssignmentChange(c, evs, 1, 5)).toBeNull();
     expect(validateAssignmentChange(c, evs, 1, 0)).toBeTruthy();
   });
+});
+
+describe('rollsWithHistory', () => {
+  it('includes rolls with done or undo events, even if net-undone', () => {
+    const s = rollsWithHistory([
+      ev({ action: 'done', id: 'd1', roll: '2' }),
+      ev({ action: 'undo', id: 'u1', roll: '2', ref: 'd1' }),
+      ev({ action: 'done', id: 'd3', roll: '5' }),
+      ev({ action: 'cfg', roll: '9' })
+    ]);
+    expect([...s].sort()).toEqual(['2', '5']);
+  });
+  it('is empty for no events', () => { expect(rollsWithHistory([]).size).toBe(0); });
 });

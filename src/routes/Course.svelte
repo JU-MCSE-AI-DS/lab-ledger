@@ -1,7 +1,10 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
+  import { hold } from '../lib/hold';
   import { go } from '../lib/router.svelte';
   import { naturalCompare } from '../lib/model';
+  import { parseRolls } from '../lib/notation';
+  import { rollsWithHistory } from '../lib/ops';
   import { googleEnabled } from '../lib/google/config';
   import { auth } from '../lib/google/auth.svelte';
   import { inviteTA } from '../lib/google/drive';
@@ -19,12 +22,36 @@
   let newCount = $state(10);
   let invite = $state('');
   let showInactive = $state(false);
+  let delExpr = $state('');
   let doing = $state<'' | 'signin' | 'sync' | 'rebuild' | 'invite'>('');
   async function run(k: typeof doing, f: () => Promise<unknown>) { doing = k; try { await f(); } catch (e) { msg = String((e as Error).message ?? e); } finally { doing = ''; } }
   const link = $derived(`${location.origin}${import.meta.env.BASE_URL}#/c/${encodeURIComponent(course.id)}`);
   const rolls = $derived([...course.rolls].sort((a, b) => naturalCompare(a.roll, b.roll)));
 
   async function addRolls() { msg = (await app.addRolls(rollExpr)) ?? ''; if (!msg) rollExpr = ''; }
+  const hasHistory = $derived(rollsWithHistory(app.events));
+  async function confirmDelete(list: string[], skipped: string[]) {
+    if (!list.length) return false;
+    const extra = skipped.length ? `\n\nSkipped (have progress, deactivate instead): ${skipped.join(', ')}` : '';
+    if (!confirm(`Delete ${list.length} roll${list.length === 1 ? '' : 's'}: ${list.join(', ')}?${extra}`)) return false;
+    await app.deleteRolls(list);
+    return true;
+  }
+  async function deleteRolls() {
+    const rs = parseRolls(delExpr);
+    if (!rs || !rs.length) { msg = 'Could not read roll list (e.g. 1-58, 102)'; return; }
+    const have = new Set(course.rolls.map((r) => r.roll));
+    const inRoster = [...new Set(rs)].filter((r) => have.has(r));
+    const skipped = inRoster.filter((r) => hasHistory.has(r));
+    const list = inRoster.filter((r) => !hasHistory.has(r));
+    if (!list.length) { msg = inRoster.length ? `Nothing deleted: ${skipped.join(', ')} ha${skipped.length === 1 ? 's' : 've'} logged progress. Deactivate instead.` : 'None of those rolls are in the roster.'; return; }
+    msg = '';
+    if (await confirmDelete(list, skipped)) delExpr = '';
+  }
+  async function deleteOne(roll: string) {
+    if (hasHistory.has(roll)) { msg = `Roll ${roll} has logged progress and can't be deleted. Tap to deactivate instead.`; return; }
+    msg = ''; await confirmDelete([roll], []);
+  }
   async function addAssignment() { msg = (await app.addAssignment(newTitle, Number(newCount))) ?? ''; if (!msg) newTitle = ''; }
   async function setCount(id: number, e: Event) {
     const el = e.target as HTMLInputElement;
@@ -116,11 +143,20 @@
   <section class="card space-y-2">
     <h2 class="font-semibold">Rolls <span class="muted text-sm font-normal">({course.rolls.filter((r) => r.active).length} active)</span></h2>
     <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Add rolls</span><input name="rolls" autocomplete="off" bind:value={rollExpr} placeholder="1-58, 102" /></label><button class="btn" onclick={addRolls}><Plus aria-hidden="true" />Add</button></div>
+    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Remove rolls (only those with no progress)</span><input name="remove-rolls" autocomplete="off" bind:value={delExpr} placeholder="1-58, 102" /></label><button class="btn btn-danger" onclick={deleteRolls}><Trash2 aria-hidden="true" />Remove</button></div>
     <label class="text-sm muted flex gap-2 items-center"><input type="checkbox" name="show-inactive" bind:checked={showInactive} /> Show all (to deactivate / reactivate)</label>
     {#if showInactive}
+      <p class="text-xs muted">Tap to deactivate / reactivate. Hold, or hover and click ×, to delete a roll with no progress.</p>
       <div class="flex flex-wrap gap-1.5">
         {#each rolls as r (r.roll)}
-          <button class="chip {r.active ? '' : 'opacity-40 line-through'}" onclick={() => app.setRollActive(r.roll, !r.active)}>{r.roll}</button>
+          <span class="hold-wrap">
+            <button class="chip select-none {r.active ? '' : 'opacity-40 line-through'}"
+              aria-keyshortcuts="Delete"
+              use:hold={() => deleteOne(r.roll)}
+              onkeydown={(e) => { if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteOne(r.roll); } }}
+              onclick={() => app.setRollActive(r.roll, !r.active)}>{r.roll}</button>
+            <button class="hold-x" tabindex="-1" aria-label="Delete roll {r.roll}" title="Delete roll {r.roll}" onclick={() => deleteOne(r.roll)}><X aria-hidden="true" /></button>
+          </span>
         {/each}
       </div>
     {:else if rolls.some((r) => !r.active)}
