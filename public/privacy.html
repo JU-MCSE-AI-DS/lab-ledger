@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy · Lab Ledger</title>
+<link rel="icon" href="icon.svg" />
+<style>
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; color: #1c1c1c; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { color: #e7e5e4; background: #1c1c1c; } a { color: #93c5fd; } }
+  h1 { font-size: 1.6rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<h1>Lab Ledger Privacy Policy</h1>
+<p>Last updated: 20 November 2026</p>
+
+<p>Lab Ledger is a static web app that instructors and teaching assistants use to log students' lab progress. It has no server of its own. Everything described below happens in your browser or between your browser and Google.</p>
+
+<h2>What the app accesses</h2>
+<p>When you sign in with Google, Lab Ledger requests these permissions:</p>
+<ul>
+  <li><strong>Your email address</strong> (<code>openid</code>, <code>email</code>). The app records it as the author of each log entry and shows it in the app.</li>
+  <li><strong>Google Drive files you use with this app</strong> (<code>drive.file</code>). The app can read and edit only the spreadsheets it creates or that you open through the Google file picker. It cannot see any other files in your Drive.</li>
+</ul>
+
+<h2>Where your data goes</h2>
+<ul>
+  <li><strong>Your browser.</strong> Course data is kept in your browser's IndexedDB so the app works offline. Your email address, a random device ID and display preferences are kept in local storage.</li>
+  <li><strong>Your Google Sheet.</strong> Log entries (roll number, problem, action, date, your email and device ID) are written to the course spreadsheet in your Google Drive. Anyone you share that spreadsheet with can see them.</li>
+</ul>
+<p>Lab Ledger does not send data to any server other than Google's. It does not use analytics, advertising or tracking. Nobody sells, shares or transfers your data to third parties.</p>
+
+<h2>Google API Services User Data Policy</h2>
+<p>Lab Ledger's use of information received from Google APIs follows the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h2>Removing your data</h2>
+<ul>
+  <li>Sign out in the app, then clear this site's data in your browser settings.</li>
+  <li>Delete the course spreadsheets from Google Drive.</li>
+  <li>Revoke the app's access at <a href="https://myaccount.google.com/connections">myaccount.google.com/connections</a>.</li>
+</ul>
+
+<h2>Contact</h2>
+<p>Questions: open an issue at <a href="https://github.com/JU-MCSE-AI-DS/lab-ledger/issues">github.com/JU-MCSE-AI-DS/lab-ledger</a>.</p>
+
+<p><a href="./">Back to Lab Ledger</a> · <a href="terms.html">Terms of Service</a></p>
+</body>
+</html>

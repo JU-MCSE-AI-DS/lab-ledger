@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@import "./theme/tailwind.css";
+
+/* JetBrains Mono, self-hosted variable font (one file per subset covers all weights) */
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap; src: url("./assets/fonts/jetbrains-mono-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap; src: url("./assets/fonts/jetbrains-mono-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+@theme inline {
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-hush-muted-text: var(--hush-muted-text);
+}
+
+/* Derived tokens: no new hues, only mixes of the Material Hush palette. */
+:root {
+  --accent: var(--hush-blue);
+  --on-accent: var(--hush-bg);
+  /* readable secondary text (>=4.5:1 on bg and surface in both themes); --hush-muted stays for decoration */
+  --hush-muted-text: color-mix(in srgb, var(--hush-fg) 35%, var(--hush-muted));
+  /* form-field boundary (>=3:1, WCAG 1.4.11) */
+  --ctl-border: color-mix(in srgb, var(--hush-fg) 42%, var(--hush-border));
+  /* control height scale: every button, input and select uses one of these */
+  --ctl-sm: 2rem;
+  --ctl-md: 2.5rem;
+  --ctl-lg: 3rem;
+}
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+html, body { height: 100%; overflow: hidden; }
+#app { position: fixed; inset: 0; overflow: hidden; }
+/* iOS zooms into fields under 16px on focus, leaving the page panned/zoomed */
+@media (max-width: 1023.98px) { input, select, textarea { font-size: 16px; } }
+body { background: var(--hush-bg); color: var(--hush-fg); font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+html { caret-color: var(--accent); scrollbar-color: var(--hush-selection) transparent; }
+button { cursor: pointer; touch-action: manipulation; }
+button:disabled { opacity: .45; cursor: default; }
+input, select, textarea { background: var(--hush-bg); color: var(--hush-fg); border: 1px solid var(--ctl-border); border-radius: .5rem; padding: .375rem .65rem; min-height: var(--ctl-md); min-width: 0; font: inherit; line-height: 1.5; }
+input[type="checkbox"], input[type="radio"] { min-height: 0; padding: 0; width: 1.125rem; height: 1.125rem; accent-color: var(--accent); }
+::placeholder { color: var(--hush-muted-text); opacity: 1; }
+input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+}
+
+@layer components {
+/* Buttons: .btn (md, 40px), .btn-sm (32px; 40px on touch), .btn-lg (48px), .btn-icon (square) */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: 1px solid var(--hush-border); background: var(--hush-surface); color: var(--hush-fg); border-radius: .5rem; padding: 0 .85rem; min-height: var(--ctl-md); line-height: 1.25; white-space: nowrap; text-decoration: none; }
+.btn:hover:not(:disabled) { background: var(--hush-overlay); }
+.btn-sm { min-height: var(--ctl-sm); padding: 0 .625rem; font-size: .875rem; }
+.btn-lg { min-height: var(--ctl-lg); padding: 0 1.1rem; }
+.btn-icon { padding: 0; width: var(--ctl-md); }
+.btn-icon.btn-sm { width: var(--ctl-sm); }
+.btn-icon.btn-lg { width: var(--ctl-lg); }
+@media (pointer: coarse) {
+  .btn-sm { min-height: var(--ctl-md); }
+  .btn-icon.btn-sm { width: var(--ctl-md); }
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, var(--hush-fg)); }
+.btn-ghost { background: transparent; border-color: transparent; }
+.btn-danger { color: var(--hush-red); }
+.btn svg, .icon { width: 1.125rem; height: 1.125rem; flex: none; stroke-width: 2; }
+.btn-sm svg { width: 1rem; height: 1rem; }
+
+/* Segmented control: <div class="seg" role="group"><button aria-pressed="true">… */
+.seg { display: inline-flex; border: 1px solid var(--hush-border); border-radius: .5rem; overflow: hidden; background: var(--hush-surface); }
+.seg > button { display: inline-flex; align-items: center; gap: .4rem; min-height: calc(var(--ctl-md) - 2px); padding: 0 .85rem; }
+.seg > button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.seg > button:not([aria-pressed="true"]):hover { background: var(--hush-overlay); }
+
+.card { background: var(--hush-surface); border: 1px solid var(--hush-border); border-radius: .75rem; padding: .85rem; }
+.muted { color: var(--hush-muted-text); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.chip { min-width: 2.75rem; min-height: 2.75rem; border-radius: .6rem; border: 1px solid var(--hush-border); background: var(--hush-surface); font-family: var(--font-mono); font-size: .95rem; user-select: none; -webkit-user-select: none; }
+.chip.done { background: var(--hush-green); color: var(--hush-bg); border-color: var(--hush-green); }
+.chip.add { border: 2px dashed var(--hush-green); background: color-mix(in srgb, var(--hush-green) 22%, transparent); }
+.chip.remove { border: 2px solid var(--hush-red); background: color-mix(in srgb, var(--hush-red) 22%, transparent); text-decoration: line-through; }
+.chip.anchor { outline: 3px solid var(--accent); outline-offset: 1px; }
+.hm-done { background: var(--hush-green); }
+.hm-miss { background: color-mix(in srgb, var(--hush-red) 35%, transparent); }
+
+}
+
+.print-sheet { display: block; }
+@page { size: A4 landscape; margin: 10mm; }
+@media print {
+  html, body, #app { height: auto; overflow: visible !important; background: #fff !important; color: #000 !important; }
+  #app { position: static !important; }
+  .no-print { display: none !important; }
+  .print-overlay { position: static !important; inset: auto !important; overflow: visible !important; background: #fff !important; }
+  .print-page { break-after: page; }
+  .print-page:last-child { break-after: auto; }
+  .hm-done, .hm-miss, th, td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

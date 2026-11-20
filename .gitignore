@@ -1,0 +1,9 @@
+.env
+legacy/.env
+.env.local
+token.json
+credentials.json
+node_modules
+dist
+.venv
+.DS_Store
