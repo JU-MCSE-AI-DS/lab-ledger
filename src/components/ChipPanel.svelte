@@ -19,16 +19,35 @@
   let anchor = $state<{ a: number; p: number } | null>(null);
   let timer: ReturnType<typeof setTimeout> | null = null;
   let longFired = false;
+  let drag = $state<{ a: number; p: number; end: number } | null>(null);
+  let dragged = $state(false);
 
   $effect(() => { roll; anchor = null; open = {}; });
 
   function down(a: number, p: number) {
-    longFired = false;
+    longFired = false; dragged = false; drag = { a, p, end: p };
     timer = setTimeout(() => { longFired = true; anchor = { a, p }; navigator.vibrate?.(15); }, 450);
   }
   function up() { if (timer) clearTimeout(timer); timer = null; }
+  function move(e: PointerEvent) {
+    if (!drag) return;
+    const c = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-chip]');
+    const [a, p] = c?.dataset.chip?.split('.').map(Number) ?? [];
+    if (a !== drag.a || p === drag.end) return;
+    drag.end = p;
+    if (p !== drag.p) { dragged = true; up(); anchor = null; }
+  }
+  function release() {
+    if (drag && dragged && drag.end !== drag.p) {
+      const want = !app.effective(roll, drag.a, drag.p);
+      for (let q = Math.min(drag.p, drag.end); q <= Math.max(drag.p, drag.end); q++) app.setEffective(roll, drag.a, q, want);
+    }
+    drag = null; up();
+  }
+  function cancel() { drag = null; dragged = false; up(); }
   function tap(a: number, p: number) {
     if (longFired) { longFired = false; return; }
+    if (dragged) { dragged = false; return; }
     if (anchor && anchor.a === a) {
       const want = !app.effective(roll, a, anchor.p);
       for (let q = Math.min(anchor.p, p); q <= Math.max(anchor.p, p); q++) app.setEffective(roll, a, q, want);
@@ -45,6 +64,7 @@
     catch { /* cancelled */ }
   }
 </script>
+<svelte:window onpointermove={move} onpointerup={release} onpointercancel={cancel} />
 <div class="p-3 space-y-3">
   <div class="flex items-center gap-2">
     <div class="min-w-0 flex-1">
@@ -72,10 +92,10 @@
           {#each Array.from({ length: a.problems }, (_, i) => i + 1) as p}
             {@const st = app.stagedState(roll, a.id, p)}
             <button
-              class="chip {app.isDone(roll, a.id, p) && st !== 'remove' ? 'done' : ''} {st ?? ''} {anchor && anchor.a === a.id && anchor.p === p ? 'anchor' : ''}"
+              class="chip {app.isDone(roll, a.id, p) && st !== 'remove' ? 'done' : ''} {st ?? ''} {anchor && anchor.a === a.id && anchor.p === p ? 'anchor' : ''} {drag && dragged && drag.a === a.id && p >= Math.min(drag.p, drag.end) && p <= Math.max(drag.p, drag.end) ? 'sel' : ''}"
               data-chip="{a.id}.{p}"
               title={a.problemTitles?.[p - 1] ?? `${a.id}.${p}`}
-              onpointerdown={() => down(a.id, p)} onpointerup={up} onpointerleave={up} onpointercancel={up}
+              onpointerdown={() => down(a.id, p)}
               oncontextmenu={(e) => e.preventDefault()}
               onclick={() => tap(a.id, p)}>{p}</button>
           {/each}
@@ -83,5 +103,5 @@
       {/if}
     </section>
   {/each}
-  {#if anchor}<p class="text-sm muted">Range starts at {anchor.a}.{anchor.p}. Tap another chip to toggle the whole range.</p>{/if}
+  {#if anchor}<p class="text-sm muted">Range starts at {anchor.a}.{anchor.p}. Tap another chip to toggle the whole range.</p>{:else}<p class="text-sm muted">Tip: slide across chips, or long-press one then tap another, to toggle a range.</p>{/if}
 </div>

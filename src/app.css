@@ -79,10 +79,11 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 .card { background: var(--hush-surface); border: 1px solid var(--hush-border); border-radius: .75rem; padding: .85rem; }
 .muted { color: var(--hush-muted-text); }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.chip { min-width: 2.75rem; min-height: 2.75rem; border-radius: .6rem; border: 1px solid var(--hush-border); background: var(--hush-surface); font-family: var(--font-mono); font-size: .95rem; user-select: none; -webkit-user-select: none; }
+.chip { min-width: 2.75rem; min-height: 2.75rem; border-radius: .6rem; border: 1px solid var(--hush-border); background: var(--hush-surface); font-family: var(--font-mono); font-size: .95rem; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
 .chip.done { background: var(--hush-green); color: var(--hush-bg); border-color: var(--hush-green); }
 .chip.add { border: 2px dashed var(--hush-green); background: color-mix(in srgb, var(--hush-green) 22%, transparent); }
 .chip.remove { border: 2px solid var(--hush-red); background: color-mix(in srgb, var(--hush-red) 22%, transparent); text-decoration: line-through; }
+.chip.sel { outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 1px; background: color-mix(in srgb, var(--accent) 18%, var(--hush-surface)); }
 .chip.anchor { outline: 3px solid var(--accent); outline-offset: 1px; }
 .hm-done { background: var(--hush-green); }
 .hm-miss { background: color-mix(in srgb, var(--hush-red) 35%, transparent); }
