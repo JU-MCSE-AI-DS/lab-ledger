@@ -8,6 +8,8 @@
   import ChipPanel from '../components/ChipPanel.svelte';
   import { Undo2, Check } from '@lucide/svelte';
   import NotationBar from '../components/NotationBar.svelte';
+  import { slide } from 'svelte/transition';
+  import { dur, ease } from '../lib/motion';
 
   const course = $derived(app.course!);
   let selected = $state<string | null>(router.params.get('roll'));
@@ -31,13 +33,13 @@
         <div class="lg:hidden"><Keypad {rolls} onpick={pick} /></div>
       {/if}
       {#if selected && rolls.includes(selected)}
-        <ChipPanel roll={selected} {course} stat={sel} showChange={!keypadOpen} onchange={() => (keypadOpen = true)} />
+        {#key selected}<ChipPanel roll={selected} {course} stat={sel} showChange={!keypadOpen} onchange={() => (keypadOpen = true)} />{/key}
       {:else}
         <p class="p-6 muted hidden lg:block">Pick a roll from the list (or type digits).</p>
       {/if}
     </div>
     {#if staged > 0}
-      <div class="no-print shrink-0 bg-hush-surface border-t border-hush-border px-3 py-2 flex items-center gap-2" data-testid="savebar">
+      <div transition:slide={{ duration: dur(180), easing: ease }} class="no-print shrink-0 bg-hush-surface border-t border-hush-border px-3 py-2 flex items-center gap-2" data-testid="savebar">
         <span class="mono font-semibold flex gap-2" data-testid="diff-badge">{#if app.stagedCounts.add}<span class="text-hush-green">+{app.stagedCounts.add}</span>{/if}{#if app.stagedCounts.remove}<span class="text-hush-red">−{app.stagedCounts.remove}</span>{/if}</span>
         {#if app.notToday}<span class="text-sm mono text-hush-yellow">for {dateLabel}</span>{/if}
         <button class="btn ml-auto" onclick={() => app.discard()}><Undo2 aria-hidden="true" />Discard</button>

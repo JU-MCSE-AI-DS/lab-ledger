@@ -23,9 +23,9 @@
   <ul class="flex-1 overflow-auto">
     {#each list as s (s.roll)}
       <li>
-        <button data-roll={s.roll} class="w-full flex items-center gap-3 px-3 py-2 text-left border-b border-hush-border {selected === s.roll ? 'bg-accent/15 text-accent' : 'hover:bg-hush-surface'}" aria-current={selected === s.roll ? 'true' : undefined} onclick={() => onpick(s.roll)}>
+        <button data-roll={s.roll} class="w-full flex items-center gap-3 px-3 py-2 text-left transition-colors duration-[120ms] border-b border-hush-border {selected === s.roll ? 'bg-accent/15 text-accent' : 'hover:bg-hush-surface'}" aria-current={selected === s.roll ? 'true' : undefined} onclick={() => onpick(s.roll)}>
           <span class="mono w-10 font-semibold">{s.roll}</span>
-          <span class="flex-1 h-2 rounded bg-hush-overlay overflow-hidden"><span data-arrive class="block h-full bg-hush-green" style="width:{Math.round(s.pct * 100)}%"></span></span>
+          <span class="flex-1 h-2 rounded bg-hush-overlay overflow-hidden"><span data-arrive class="bar-fill block h-full bg-hush-green" style="width:{Math.round(s.pct * 100)}%"></span></span>
           <span data-arrive class="mono text-xs {selected === s.roll ? '' : 'muted'} w-14 text-right">{s.done}/{s.total}</span>
         </button>
       </li>

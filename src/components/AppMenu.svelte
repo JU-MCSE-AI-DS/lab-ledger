@@ -79,10 +79,15 @@
     width: min(18rem, calc(100vw - 1rem)); max-height: calc(100dvh - 4.5rem); overflow: auto;
     background: var(--hush-surface); color: var(--hush-fg);
     border: 1px solid var(--hush-border); border-radius: .75rem;
+    opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top right;
+    transition: opacity 140ms ease, transform var(--dur) var(--ease-out), overlay var(--dur) allow-discrete, display var(--dur) allow-discrete;
   }
+  .menu-panel:popover-open { opacity: 1; transform: none; }
+  @starting-style { .menu-panel:popover-open { opacity: 0; transform: scale(.96) translateY(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .menu-panel { transform: none; transition: opacity 140ms ease, overlay 140ms allow-discrete, display 140ms allow-discrete; } @starting-style { .menu-panel:popover-open { transform: none; } } }
   .menu-row {
     display: flex; align-items: center; gap: .6rem; width: 100%; min-height: 2.5rem;
-    padding: 0 .5rem; border-radius: .5rem; font-size: .9375rem; background: transparent;
+    padding: 0 .5rem; border-radius: .5rem; font-size: .9375rem; background: transparent; transition: background-color var(--dur-fast) ease;
   }
   .menu-row:hover { background: var(--hush-overlay); }
   .menu-row :global(svg) { width: 1.125rem; height: 1.125rem; flex: none; }

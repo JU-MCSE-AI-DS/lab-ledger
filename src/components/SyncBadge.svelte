@@ -22,6 +22,7 @@
 </script>
 {#if app.course}
   <button class="btn {kind === 'conflict' ? '!border-hush-yellow' : ''}" title={s.error || aria} aria-label={aria} onclick={() => go(app.course!.id, 'manage')}>
+    {#key kind}<span class="inline-flex items-center gap-[.4rem] ll-pop-in">
     {#if kind === 'conflict'}<TriangleAlert aria-hidden="true" />{app.conflicts.length}
     {:else if kind === 'local'}<HardDrive aria-hidden="true" /><span>Local</span>
     {:else if kind === 'reconnect'}<KeyRound aria-hidden="true" /><span>Reconnect</span>
@@ -30,5 +31,6 @@
     {:else if kind === 'syncing'}<LedgerLoader />
     {:else if kind === 'pending'}<CloudUpload aria-hidden="true" />{s.pending}
     {:else}<CloudCheck aria-hidden="true" />{/if}
+    </span>{/key}
   </button>
 {/if}

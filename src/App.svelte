@@ -55,20 +55,22 @@
     <main class="flex-1 min-h-0 overflow-auto" class:ll-arrive={arriving}>
       {#if app.loadedFor !== app.course.id && router.tab !== 'manage'}<CourseSkeleton />
       {:else}
+        {#key router.tab}<div class="h-full ll-rise">
         {#if router.tab === 'log'}<Log />
         {:else if router.tab === 'progress'}<Progress />
         {:else if router.tab === 'query'}<Query />
         {:else if router.tab === 'history'}<History />
         {:else}<ManageTab />{/if}
+        </div>{/key}
       {/if}
     </main>
-    <nav class="lg:hidden grid grid-cols-4 border-t border-hush-border bg-hush-surface pb-[env(safe-area-inset-bottom)]">
+    <nav class="relative lg:hidden grid grid-cols-4 border-t border-hush-border bg-hush-surface pb-[env(safe-area-inset-bottom)]">
       {#each tabs as [t, label, Icon]}
         <button class="relative flex flex-col items-center gap-0.5 pt-2.5 pb-2 text-xs min-h-14 {navTab === t ? 'text-accent font-semibold' : 'muted'}" aria-current={navTab === t ? 'page' : undefined} onclick={() => go(app.course!.id, t)}>
-          {#if navTab === t}<span class="absolute top-0 inset-x-0 h-0.5 bg-accent"></span>{/if}
           <Icon aria-hidden="true" class="size-5" />{label}
         </button>
       {/each}
+      <span class="nav-indicator absolute top-0 left-0 w-1/4 h-0.5 bg-accent" style="transform: translateX({tabs.findIndex((x) => x[0] === navTab) * 100}%); transition: transform 220ms var(--ease-out)"></span>
     </nav>
   </div>
   <UndoToast />

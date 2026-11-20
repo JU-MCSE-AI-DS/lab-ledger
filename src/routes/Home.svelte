@@ -7,6 +7,9 @@
   import { googleEnabled } from '../lib/google/config';
   import { auth } from '../lib/google/auth.svelte';
   import { createRemoteCourse, openViaPicker, openById } from '../lib/google/course';
+  import { slide, fade } from 'svelte/transition';
+  import { flip } from 'svelte/animate';
+  import { dur, ease } from '../lib/motion';
   import AppMenu from '../components/AppMenu.svelte';
   import LedgerLoader from '../components/LedgerLoader.svelte';
   import { Plus, FlaskConical, FolderOpen, Link, X, CloudOff, Sheet, HardDrive } from '@lucide/svelte';
@@ -86,9 +89,9 @@
   <section class="space-y-2">
     <h2 class="font-semibold">Your courses</h2>
     {#if app.courses.length}<p class="text-xs muted">Hold a course, or hover and click ×, to remove it from this device.</p>{/if}
-    {#each app.courses as c (c.id)}
-      <div class="hold-wrap block">
-        <button class="card w-full text-left flex items-center gap-2 hover:bg-hush-overlay select-none" use:hold={() => removeOne(c)} onclick={() => go(c.id)}>
+    {#each app.courses as c, i (c.id)}
+      <div class="hold-wrap block ll-rise" style="animation-delay: {Math.min(i, 8) * 35}ms" out:fade={{ duration: dur(150) }} animate:flip={{ duration: dur(220), easing: ease }}>
+        <button class="card w-full text-left flex items-center gap-2 hover:bg-hush-overlay transition-colors duration-[120ms] select-none" use:hold={() => removeOne(c)} onclick={() => go(c.id)}>
           <span class="font-semibold flex-1">{c.title}</span>
           <span class="muted text-xs flex items-center gap-1">{#if c.kind === 'google'}<Sheet class="w-3.5 h-3.5" aria-hidden="true" /> Google Sheet{:else}<HardDrive class="w-3.5 h-3.5" aria-hidden="true" /> Local{/if}</span>
           <span class="muted text-xs ml-3">{c.rolls.filter((r) => r.active).length} rolls</span>
@@ -117,7 +120,7 @@
   </section>
 
   {#if creating}
-    <section class="card space-y-3">
+    <section class="card space-y-3" transition:slide={{ duration: dur(220), easing: ease }}>
       <h2 class="font-semibold">New course</h2>
       <label class="field"><span class="text-xs muted">Title</span><input name="course-title" autocomplete="off" bind:value={title} placeholder="e.g. MCA Programming Lab (C) 2025-27" /></label>
       <label class="field"><span class="text-xs muted">Rolls</span><input name="rolls" autocomplete="off" bind:value={rolls} placeholder="1-58, 102" /></label>
@@ -125,7 +128,7 @@
         <p class="text-sm muted">Assignments</p>
         <div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-20">Problems</span>{#if rows.length > 1}<span class="w-10"></span>{/if}</div>
         {#each rows as r, i}
-          <div class="flex gap-2">
+          <div class="flex gap-2 ll-rise">
             <span class="mono w-8 h-10 flex items-center">A{i + 1}</span>
             <input name="assignment-title" class="flex-1" bind:value={r.title} aria-label="Assignment {i + 1} title" />
             <input name="assignment-problems" class="w-20 mono" type="number" min="1" bind:value={r.problems} aria-label="Assignment {i + 1} problems" />

@@ -63,4 +63,9 @@
     border-radius: .75rem;
   }
   .warn-dialog::backdrop { background: color-mix(in srgb, var(--hush-bg) 70%, transparent); }
+  .warn-dialog[open] { animation: warn-in 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .warn-dialog[open]::backdrop { animation: warn-fade 180ms ease; }
+  @keyframes warn-in { from { transform: scale(.96); opacity: 0; } }
+  @keyframes warn-fade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .warn-dialog[open] { animation: warn-fade 180ms ease; } }
 </style>
