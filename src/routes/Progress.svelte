@@ -30,7 +30,7 @@
       <button aria-pressed={view === 'summary'} onclick={() => (view = 'summary')}><Table2 aria-hidden="true" class="icon" />Summary</button>
     </div>
     {#if view === 'heat' && cur}
-      <label class="field"><span class="text-xs muted">Assignment</span><select value={cur.id} onchange={(e) => { aId = Number((e.target as HTMLSelectElement).value); picked = null; }}>
+      <label class="field"><span class="text-xs muted">Assignment</span><select name="assignment" value={cur.id} onchange={(e) => { aId = Number((e.target as HTMLSelectElement).value); picked = null; }}>
         {#each asgs as a}<option value={a.id}>A{a.id} {a.title}</option>{/each}
       </select></label>
     {/if}

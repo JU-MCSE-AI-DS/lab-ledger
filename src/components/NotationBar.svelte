@@ -27,12 +27,12 @@
 </script>
 <div class="p-3 border-b border-hush-border space-y-1.5">
   <div class="flex gap-2 items-start">
-    <textarea bind:value={text} onkeydown={key} rows={text.includes('\n') ? Math.min(6, text.split('\n').length) : 1} class="flex-1 mono text-sm resize-none" spellcheck="false" autocapitalize="off"
-      placeholder={roll ? '3.{5-8}  -3.5  3.*' : 'e.g. 12 3.{1-4}'} aria-label="Notation"></textarea>
+    <textarea name="notation" autocomplete="off" bind:value={text} onkeydown={key} rows={text.includes('\n') ? Math.min(6, text.split('\n').length) : 1} class="flex-1 mono text-sm resize-none" spellcheck="false" autocapitalize="off"
+      placeholder={roll ? '3.{5-8} -3.5' : '12 3.{1-4}'} aria-label="Notation"></textarea>
     <button class="btn {app.notToday ? 'max-sm:w-10 max-sm:px-0' : ''}" aria-label="Stage" title="Stage" disabled={!res.ops.length || !!res.errors.length} onclick={apply}><ListPlus aria-hidden="true" /><span class={app.notToday ? 'max-sm:hidden' : ''}>Stage</span></button>
     <label class="btn relative overflow-hidden cursor-pointer {app.notToday ? 'bg-hush-yellow/25 border-hush-yellow mono lg:w-10 lg:px-0' : 'btn-icon'}" title={app.notToday ? `Logging for ${dateLabel}, not today` : 'Log for another date'}>
       <CalendarDays aria-hidden="true" />{#if app.notToday}<span class="lg:hidden">{dateLabel}</span>{/if}
-      <input type="date" class="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer !p-0 !border-0" value={app.date}
+      <input type="date" name="log-date" class="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer !p-0 !border-0" value={app.date}
         onclick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
         onchange={(e) => app.setDate((e.target as HTMLInputElement).value || null)} aria-label={app.notToday ? `Logging for ${dateLabel}, not today. Change date` : 'Log for another date'} />
     </label>

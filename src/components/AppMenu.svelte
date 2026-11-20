@@ -63,7 +63,7 @@
     {#if !googleEnabled}<hr class="my-1 border-hush-border" />{/if}
     <div class="px-2 pb-1 pt-1 space-y-1">
       <label class="text-xs muted block" for="menu-email">Name or email on your log entries</label>
-      <input id="menu-email" class="w-full" value={app.email} onchange={(e) => app.setEmail((e.target as HTMLInputElement).value.trim() || 'me@local')} />
+      <input id="menu-email" name="email" autocomplete="email" class="w-full" value={app.email} onchange={(e) => app.setEmail((e.target as HTMLInputElement).value.trim() || 'me@local')} />
     </div>
   {/if}
 

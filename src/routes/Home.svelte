@@ -101,7 +101,7 @@
     </div>
     {#if googleEnabled}
       <div class="flex gap-2 items-end">
-        <label class="field flex-1"><span class="text-xs muted">Course link</span><input bind:value={linkText} placeholder="Paste a course link" /></label>
+        <label class="field flex-1"><span class="text-xs muted">Course link</span><input name="course-link" autocomplete="off" bind:value={linkText} placeholder="Paste a course link" /></label>
         <button class="btn" disabled={!!busy} aria-busy={busy === 'link'} onclick={openLink}>{#if busy === 'link'}<LedgerLoader />{:else}<Link aria-hidden="true" />{/if}Open</button>
       </div>
       {#if !auth.signedIn}<p class="muted text-sm">You will be asked to sign in with Google.</p>{/if}
@@ -112,16 +112,16 @@
   {#if creating}
     <section class="card space-y-3">
       <h2 class="font-semibold">New course</h2>
-      <label class="field"><span class="text-xs muted">Title</span><input bind:value={title} placeholder="e.g. MCA Programming Lab (C) 2025-27" /></label>
-      <label class="field"><span class="text-xs muted">Rolls</span><input bind:value={rolls} placeholder="1-58, 102" /></label>
+      <label class="field"><span class="text-xs muted">Title</span><input name="course-title" autocomplete="off" bind:value={title} placeholder="e.g. MCA Programming Lab (C) 2025-27" /></label>
+      <label class="field"><span class="text-xs muted">Rolls</span><input name="rolls" autocomplete="off" bind:value={rolls} placeholder="1-58, 102" /></label>
       <div class="space-y-1.5">
         <p class="text-sm muted">Assignments</p>
         <div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-20">Problems</span>{#if rows.length > 1}<span class="w-10"></span>{/if}</div>
         {#each rows as r, i}
           <div class="flex gap-2">
             <span class="mono w-8 h-10 flex items-center">A{i + 1}</span>
-            <input class="flex-1" bind:value={r.title} aria-label="Assignment {i + 1} title" />
-            <input class="w-20 mono" type="number" min="1" bind:value={r.problems} aria-label="Assignment {i + 1} problems" />
+            <input name="assignment-title" class="flex-1" bind:value={r.title} aria-label="Assignment {i + 1} title" />
+            <input name="assignment-problems" class="w-20 mono" type="number" min="1" bind:value={r.problems} aria-label="Assignment {i + 1} problems" />
             {#if rows.length > 1}<button class="btn btn-icon" aria-label="Remove assignment {i + 1}" title="Remove assignment {i + 1}" onclick={() => (rows = rows.filter((_, j) => j !== i))}><X aria-hidden="true" /></button>{/if}
           </div>
         {/each}
@@ -129,8 +129,8 @@
       </div>
       {#if googleEnabled}
         <div class="flex flex-wrap gap-x-4 text-sm">
-          <label class="flex gap-1.5 items-center min-h-10"><input type="radio" bind:group={where} value="google" /> Google Sheet</label>
-          <label class="flex gap-1.5 items-center min-h-10"><input type="radio" bind:group={where} value="local" /> This device only</label>
+          <label class="flex gap-1.5 items-center min-h-10"><input type="radio" name="where" bind:group={where} value="google" /> Google Sheet</label>
+          <label class="flex gap-1.5 items-center min-h-10"><input type="radio" name="where" bind:group={where} value="local" /> This device only</label>
         </div>
       {:else}
         <p class="muted text-sm">Stored on this device only (Google is not configured).</p>

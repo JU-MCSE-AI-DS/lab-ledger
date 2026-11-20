@@ -38,7 +38,7 @@
 {:else}
   <div class="no-print h-full flex flex-col">
     <header class="flex items-center gap-2 px-3 py-2 border-b border-hush-border bg-hush-surface">
-      <select aria-label="Course" class="min-w-0 max-w-[50%] truncate font-semibold" value={app.course.id} onchange={switchCourse}>
+      <select name="course" aria-label="Course" class="min-w-0 max-w-[50%] truncate font-semibold" value={app.course.id} onchange={switchCourse}>
         {#each app.courses as c}<option value={c.id}>{c.title}</option>{/each}
         <option value="__home">All courses…</option>
       </select>

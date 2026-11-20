@@ -19,7 +19,7 @@
 </script>
 <svelte:window onkeydown={global} />
 <div class="flex flex-col h-full min-h-0">
-  <input bind:this={input} bind:value={q} onkeydown={key} placeholder="Type a roll number" inputmode="numeric" class="m-2" aria-label="Search roll" />
+  <input name="roll-search" autocomplete="off" bind:this={input} bind:value={q} onkeydown={key} placeholder="Type a roll number" inputmode="numeric" class="m-2" aria-label="Search roll" />
   <ul class="flex-1 overflow-auto">
     {#each list as s (s.roll)}
       <li>

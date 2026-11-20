@@ -48,10 +48,10 @@
 
   <section class="card space-y-2">
     <h1 class="font-semibold text-base">Course</h1>
-    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course title</span><input bind:value={title} /></label><button class="btn" onclick={() => app.renameCourse(title)} disabled={title === course.title}>Rename</button></div>
+    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course title</span><input name="course-title" autocomplete="off" bind:value={title} /></label><button class="btn" onclick={() => app.renameCourse(title)} disabled={title === course.title}>Rename</button></div>
     <p class="muted text-sm">{isGoogle ? 'Stored in a Google Sheet.' : 'Stored on this device only (local course).'}</p>
     {#if isGoogle}
-      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course link</span><input class="mono text-xs" readonly value={link} /></label><button class="btn" onclick={copyLink}><Copy aria-hidden="true" />Copy link</button></div>
+      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Course link</span><input name="course-link" autocomplete="off" class="mono text-xs" readonly value={link} /></label><button class="btn" onclick={copyLink}><Copy aria-hidden="true" />Copy link</button></div>
       <div class="flex gap-2"><a class="btn" href={`https://docs.google.com/spreadsheets/d/${course.id}`} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" />Open Sheet</a></div>
     {/if}
     {#if !googleEnabled}<p class="muted text-sm">Google sync is not configured in this build (demo / local mode).</p>{/if}
@@ -76,7 +76,7 @@
     <section class="card space-y-2">
       <h2 class="font-semibold">Invite a TA</h2>
       <p class="muted text-sm">Shares the Sheet as editor. They open it via the course link.</p>
-      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">TA email</span><input type="email" bind:value={invite} placeholder="ta@example.com" /></label><button class="btn" disabled={!invite.includes('@') || doing === 'invite'} aria-busy={doing === 'invite'} onclick={doInvite}>{#if doing === 'invite'}<LedgerLoader />Inviting…{:else}<UserPlus aria-hidden="true" />Invite{/if}</button></div>
+      <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">TA email</span><input name="ta-email" autocomplete="email" type="email" bind:value={invite} placeholder="ta@example.com" /></label><button class="btn" disabled={!invite.includes('@') || doing === 'invite'} aria-busy={doing === 'invite'} onclick={doInvite}>{#if doing === 'invite'}<LedgerLoader />Inviting…{:else}<UserPlus aria-hidden="true" />Invite{/if}</button></div>
     </section>
   {/if}
 
@@ -100,23 +100,23 @@
     {#each course.assignments as a (a.id)}
       <div class="flex items-center gap-2 {a.active ? '' : 'opacity-50'}">
         <span class="mono w-8">A{a.id}</span>
-        <input class="flex-1" value={a.title} aria-label="Title A{a.id}" onchange={(e) => app.updateAssignment(a.id, { title: (e.target as HTMLInputElement).value })} />
-        <input class="w-16 mono" type="number" min="1" value={a.problems} aria-label="Problems A{a.id}" onchange={(e) => setCount(a.id, e)} />
+        <input name="assignment-title" class="flex-1" value={a.title} aria-label="Title A{a.id}" onchange={(e) => app.updateAssignment(a.id, { title: (e.target as HTMLInputElement).value })} />
+        <input name="assignment-problems" class="w-16 mono" type="number" min="1" value={a.problems} aria-label="Problems A{a.id}" onchange={(e) => setCount(a.id, e)} />
         <button class="btn w-24 shrink-0" onclick={() => app.updateAssignment(a.id, { active: !a.active })}>{#if a.active}<EyeOff aria-hidden="true" />Hide{:else}<Eye aria-hidden="true" />Show{/if}</button>
       </div>
     {/each}
     <div class="flex gap-2 pt-1 items-end">
       <span class="w-8 shrink-0"></span>
-      <label class="field flex-1"><span class="text-xs muted">New assignment title</span><input bind:value={newTitle} /></label>
-      <label class="field w-16"><span class="text-xs muted">Problems</span><input class="mono" type="number" min="1" bind:value={newCount} /></label>
+      <label class="field flex-1"><span class="text-xs muted">New assignment title</span><input name="new-assignment-title" autocomplete="off" bind:value={newTitle} /></label>
+      <label class="field w-16"><span class="text-xs muted">Problems</span><input name="new-assignment-problems" class="mono" type="number" min="1" bind:value={newCount} /></label>
       <button class="btn w-24 shrink-0" onclick={addAssignment}><Plus aria-hidden="true" />Add</button>
     </div>
   </section>
 
   <section class="card space-y-2">
     <h2 class="font-semibold">Rolls <span class="muted text-sm font-normal">({course.rolls.filter((r) => r.active).length} active)</span></h2>
-    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Add rolls</span><input bind:value={rollExpr} placeholder="1-58, 102" /></label><button class="btn" onclick={addRolls}><Plus aria-hidden="true" />Add</button></div>
-    <label class="text-sm muted flex gap-2 items-center"><input type="checkbox" bind:checked={showInactive} /> Show all (to deactivate / reactivate)</label>
+    <div class="flex gap-2 items-end"><label class="field flex-1"><span class="text-xs muted">Add rolls</span><input name="rolls" autocomplete="off" bind:value={rollExpr} placeholder="1-58, 102" /></label><button class="btn" onclick={addRolls}><Plus aria-hidden="true" />Add</button></div>
+    <label class="text-sm muted flex gap-2 items-center"><input type="checkbox" name="show-inactive" bind:checked={showInactive} /> Show all (to deactivate / reactivate)</label>
     {#if showInactive}
       <div class="flex flex-wrap gap-1.5">
         {#each rolls as r (r.roll)}
