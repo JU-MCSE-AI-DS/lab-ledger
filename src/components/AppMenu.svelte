@@ -51,7 +51,7 @@
     <div class="px-2 pt-1 pb-1 text-xs font-semibold muted">Account</div>
     {#if auth.email}
       <div class="px-2 py-1 text-sm truncate" title={auth.email}>{auth.email}</div>
-      <button class="menu-row" onclick={() => { auth.signOut(); close(); }}><LogOut aria-hidden="true" /><span>Sign out</span></button>
+      <button class="menu-row" onclick={() => { auth.signOut(); close(); go(null); }}><LogOut aria-hidden="true" /><span>Sign out</span></button>
     {:else}
       <button class="menu-row" onclick={signIn}><LogIn aria-hidden="true" /><span>Sign in with Google</span></button>
     {/if}

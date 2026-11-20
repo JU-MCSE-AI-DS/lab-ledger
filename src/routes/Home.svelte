@@ -88,14 +88,14 @@
         <span class="muted text-xs ml-3">{c.rolls.filter((r) => r.active).length} rolls</span>
       </button>
     {:else}
-      <p class="muted text-sm">No courses yet. Create one below, or try the demo course to look around.</p>
+      <p class="muted text-sm">No courses yet. Create one below{#if !googleEnabled}, or try the demo course to look around{/if}.</p>
     {/each}
   </section>
 
   <section class="space-y-2">
     <div class="flex flex-wrap gap-2">
       <button class="btn btn-primary" onclick={() => (creating = !creating)}><Plus aria-hidden="true" /> New course</button>
-      <button class="btn" onclick={startDemo} data-testid="demo-btn"><FlaskConical aria-hidden="true" /> Try demo course</button>
+      {#if !googleEnabled}<button class="btn" onclick={startDemo} data-testid="demo-btn"><FlaskConical aria-hidden="true" /> Try demo course</button>{/if}
       {#if googleEnabled}<button class="btn" disabled={busy} onclick={() => pick()}><FolderOpen aria-hidden="true" /> Open from Google</button>{/if}
     </div>
     {#if googleEnabled}

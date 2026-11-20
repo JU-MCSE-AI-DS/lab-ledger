@@ -94,20 +94,20 @@
 
   <section class="card space-y-2">
     <h2 class="font-semibold">Assignments</h2>
-    {#if course.assignments.length}<div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-16">Problems</span><span class="btn btn-sm invisible !min-h-0 !h-0 !border-0"><EyeOff />Hide</span></div>{/if}
+    {#if course.assignments.length}<div class="flex gap-2 text-xs muted" aria-hidden="true"><span class="w-8"></span><span class="flex-1">Title</span><span class="w-16">Problems</span><span class="w-24"></span></div>{/if}
     {#each course.assignments as a (a.id)}
       <div class="flex items-center gap-2 {a.active ? '' : 'opacity-50'}">
         <span class="mono w-8">A{a.id}</span>
         <input class="flex-1" value={a.title} aria-label="Title A{a.id}" onchange={(e) => app.updateAssignment(a.id, { title: (e.target as HTMLInputElement).value })} />
         <input class="w-16 mono" type="number" min="1" value={a.problems} aria-label="Problems A{a.id}" onchange={(e) => setCount(a.id, e)} />
-        <button class="btn btn-sm" onclick={() => app.updateAssignment(a.id, { active: !a.active })}>{#if a.active}<EyeOff aria-hidden="true" />Hide{:else}<Eye aria-hidden="true" />Show{/if}</button>
+        <button class="btn w-24 shrink-0" onclick={() => app.updateAssignment(a.id, { active: !a.active })}>{#if a.active}<EyeOff aria-hidden="true" />Hide{:else}<Eye aria-hidden="true" />Show{/if}</button>
       </div>
     {/each}
     <div class="flex gap-2 pt-1 items-end">
       <span class="w-8 shrink-0"></span>
       <label class="field flex-1"><span class="text-xs muted">New assignment title</span><input bind:value={newTitle} /></label>
       <label class="field w-16"><span class="text-xs muted">Problems</span><input class="mono" type="number" min="1" bind:value={newCount} /></label>
-      <button class="btn" onclick={addAssignment}><Plus aria-hidden="true" />Add</button>
+      <button class="btn w-24 shrink-0" onclick={addAssignment}><Plus aria-hidden="true" />Add</button>
     </div>
   </section>
 
