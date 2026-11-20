@@ -33,6 +33,7 @@
     <label class="btn relative overflow-hidden cursor-pointer {app.notToday ? 'bg-hush-yellow/25 border-hush-yellow mono lg:w-10 lg:px-0' : 'btn-icon'}" title={app.notToday ? `Logging for ${dateLabel}, not today` : 'Log for another date'}>
       <CalendarDays aria-hidden="true" />{#if app.notToday}<span class="lg:hidden">{dateLabel}</span>{/if}
       <input type="date" class="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer !p-0 !border-0" value={app.date}
+        onclick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
         onchange={(e) => app.setDate((e.target as HTMLInputElement).value || null)} aria-label={app.notToday ? `Logging for ${dateLabel}, not today. Change date` : 'Log for another date'} />
     </label>
   </div>
