@@ -2,6 +2,7 @@
   import { app } from '../lib/app.svelte';
   import { activeAssignments, type Course } from '../lib/model';
   import { shareText } from '../lib/share';
+  import { HOLD_MS } from '../lib/hold';
   import type { RollStat } from '../lib/stats';
   import { Share2, Hash, ChevronDown, ChevronRight, Check, CheckCheck } from '@lucide/svelte';
   let { roll, course, stat = null, showChange = false, onchange }: { roll: string; course: Course; stat?: RollStat | null; showChange?: boolean; onchange?: () => void } = $props();
@@ -26,7 +27,7 @@
 
   function down(a: number, p: number) {
     longFired = false; dragged = false; drag = { a, p, end: p };
-    timer = setTimeout(() => { longFired = true; anchor = { a, p }; navigator.vibrate?.(15); }, 450);
+    timer = setTimeout(() => { longFired = true; anchor = { a, p }; navigator.vibrate?.(15); }, HOLD_MS);
   }
   function up() { if (timer) clearTimeout(timer); timer = null; }
   function move(e: PointerEvent) {

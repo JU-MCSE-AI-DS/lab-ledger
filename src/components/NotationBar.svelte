@@ -3,6 +3,7 @@
   import { ListPlus, CalendarDays } from '@lucide/svelte';
   import type { Course } from '../lib/model';
   import { parseNotation, resolveNotation } from '../lib/notation';
+  import { hold } from '../lib/hold';
   let { course, roll }: { course: Course; roll: string | null } = $props();
   let text = $state('');
   let dlg: HTMLDialogElement;
@@ -28,6 +29,7 @@
     }
     return { add, rem, skip };
   });
+  function backToToday() { if (app.notToday) { app.setDate(null); app.flash('Back to today'); } }
   function apply() {
     if (!res.ops.length || res.errors.length) return;
     app.stageOps(res.ops);
@@ -44,11 +46,12 @@
     <button bind:this={trigger} class="btn flex-1 justify-start" aria-keyshortcuts="/ n" onclick={open}>
       <ListPlus aria-hidden="true" />Notation<kbd class="hidden lg:inline ml-auto mono text-xs muted border border-hush-border rounded px-1.5" aria-hidden="true">/</kbd>
     </button>
-    <label class="btn relative overflow-hidden cursor-pointer mono {app.notToday ? 'bg-hush-yellow/25 border-hush-yellow' : ''}" title={app.notToday ? `Logging for ${dateLabel}, not today` : 'Log for another date'}>
+    <label class="btn relative overflow-hidden cursor-pointer mono select-none {app.notToday ? 'bg-hush-yellow/25 border-hush-yellow' : ''}" title={app.notToday ? `Logging for ${dateLabel}, not today. Hold to go back to today` : 'Log for another date'}
+      use:hold={backToToday}>
       <CalendarDays aria-hidden="true" /><span>{app.notToday ? dateLabel : 'Today'}</span>
       <input type="date" name="log-date" class="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer !p-0 !border-0" value={app.date}
         onclick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
-        onchange={(e) => app.setDate((e.target as HTMLInputElement).value || null)} aria-label={app.notToday ? `Logging for ${dateLabel}, not today. Change date` : 'Log for another date'} />
+        onchange={(e) => app.setDate((e.target as HTMLInputElement).value || null)} aria-label={app.notToday ? `Logging for ${dateLabel}, not today. Change date, or hold to go back to today` : 'Log for another date'} />
     </label>
   </div>
 </div>
