@@ -57,7 +57,7 @@ export function addDays(date: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function resolveDate(v: string, today: string, errors: string[]): string | undefined {
+export function resolveDate(v: string, today: string, errors: string[]): string | undefined {
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
   const r = /^-(\d+)d$/.exec(v);
   if (r) return addDays(today, -Number(r[1]));

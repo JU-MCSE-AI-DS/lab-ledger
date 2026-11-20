@@ -9,8 +9,10 @@
   import { auth } from '../lib/google/auth.svelte';
   import { inviteTA } from '../lib/google/drive';
   import * as sync from '../lib/sync';
+  import HistoryLine from '../components/HistoryLine.svelte';
+  import { buildHistory } from '../lib/history';
   import LedgerLoader from '../components/LedgerLoader.svelte';
-  import { Copy, ExternalLink, UserPlus, Plus, Eye, EyeOff, Trash2, RefreshCw, LogIn, Table2, ScanSearch, X } from '@lucide/svelte';
+  import { Copy, ExternalLink, UserPlus, Plus, Eye, EyeOff, Trash2, RefreshCw, LogIn, Table2, ScanSearch, X, History } from '@lucide/svelte';
 
   const course = $derived(app.course!);
   const isGoogle = $derived(course.kind === 'google');
@@ -26,6 +28,7 @@
   let doing = $state<'' | 'signin' | 'sync' | 'rebuild' | 'invite'>('');
   async function run(k: typeof doing, f: () => Promise<unknown>) { doing = k; try { await f(); } catch (e) { msg = String((e as Error).message ?? e); } finally { doing = ''; } }
   const link = $derived(`${location.origin}${import.meta.env.BASE_URL}#/c/${encodeURIComponent(course.id)}`);
+  const recent = $derived(buildHistory(app.events).slice(0, 10));
   const rolls = $derived([...course.rolls].sort((a, b) => naturalCompare(a.roll, b.roll)));
 
   async function addRolls() { msg = (await app.addRolls(rollExpr)) ?? ''; if (!msg) rollExpr = ''; }
@@ -115,10 +118,16 @@
           <div class="flex gap-2"><span class="muted">Roll</span><strong class="mono">{c.roll}</strong><span class="muted">Problem</span><span class="mono">{c.problem}</span></div>
           <div>Done by {c.doneBy} survived an undo by {c.undoBy} that did not see it. The cell is shown as done.</div>
         </div>
-        <button class="btn btn-sm" onclick={() => go(course.id, 'log', { roll: c.roll })}><ScanSearch aria-hidden="true" />View</button>
+        <button class="btn btn-sm" onclick={() => go(course.id, 'history', { roll: c.roll, problem: c.problem })}><ScanSearch aria-hidden="true" />View</button>
         <button class="btn btn-sm" onclick={() => app.dismiss(c.key)}><X aria-hidden="true" />Dismiss</button>
       </div>
     {:else}<p class="muted text-sm">None.</p>{/each}
+  </section>
+
+  <section class="card space-y-2" data-testid="recent-activity">
+    <h2 class="font-semibold">Recent activity</h2>
+    {#each recent as e (e.key)}<HistoryLine entry={e} />{:else}<p class="muted text-sm">No activity yet.</p>{/each}
+    {#if recent.length}<button class="btn btn-sm" onclick={() => go(course.id, 'history')}><History aria-hidden="true" />Show all</button>{/if}
   </section>
 
   <section class="card space-y-2">

@@ -2,8 +2,9 @@
   import { app } from '../lib/app.svelte';
   import { go } from '../lib/router.svelte';
   import { activeAssignments, activeRolls } from '../lib/model';
+  import { latestUndo, formatDay } from '../lib/history';
   import { assignmentStats } from '../lib/stats';
-  import { Grid3x3, Table2, Printer, ArrowRight } from '@lucide/svelte';
+  import { Grid3x3, Table2, Printer, ArrowRight, History } from '@lucide/svelte';
   import Heatmap from '../components/Heatmap.svelte';
   import SummaryTable from '../components/SummaryTable.svelte';
 
@@ -19,7 +20,9 @@
     if (!picked || !cur) return null;
     const c = app.folded.cells.get(`${picked.roll}|${cur.id}.${picked.p}`);
     const date = c?.done && c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '';
-    return { roll: picked.roll, id: `${cur.id}.${picked.p}`, text: c?.done ? `done ${date} by ${c.by}` : 'not done' };
+    const id = `${cur.id}.${picked.p}`;
+    const u = c?.done ? null : latestUndo(app.events, picked.roll, id);
+    return { roll: picked.roll, id, text: c?.done ? `done ${date} by ${c.by}` : u ? `undone ${formatDay(u.date)} by ${u.by}` : 'not done' };
   });
 </script>
 
@@ -38,7 +41,7 @@
   </div>
 
   {#if !asgs.length}
-    <p class="muted">No assignments yet. Add some in the Course tab.</p>
+    <p class="muted">No assignments yet. Add some in the Manage tab.</p>
   {:else if view === 'heat' && cur}
     {@const st = astats.find((x) => x.a === cur.id)}
     <p class="muted text-sm"><span data-arrive>{st?.done}/{st?.total}</span> problems done across {rolls.length} rolls ({Math.round((st?.pct ?? 0) * 100)}%). Tap a cell for details.</p>
@@ -46,7 +49,8 @@
       <Heatmap a={cur} {rolls} folded={app.folded} onpick={(roll, p) => (picked = { roll, p })} />
     </div>
     <p class="min-h-6 text-sm flex flex-wrap items-baseline gap-x-2 -mt-1" data-testid="cell-info">{#if info}<strong>Roll {info.roll}</strong><span class="mono">{info.id}</span><span>{info.text}</span>{/if}</p>
-    {#if picked}<button class="btn" onclick={() => go(course.id, 'log', { roll: picked!.roll })}>Open roll {picked.roll}<ArrowRight aria-hidden="true" /></button>{/if}
+    {#if picked}<div class="flex flex-wrap gap-2"><button class="btn" onclick={() => go(course.id, 'log', { roll: picked!.roll })}>Open roll {picked.roll}<ArrowRight aria-hidden="true" /></button>
+      <button class="btn btn-sm self-center" onclick={() => go(course.id, 'history', { roll: picked!.roll, problem: `${cur.id}.${picked!.p}` })}><History aria-hidden="true" />History</button></div>{/if}
   {:else}
     <div class="!shrink min-h-0 overflow-auto overscroll-contain bg-hush-surface border border-hush-border rounded-xl"><SummaryTable {course} folded={app.folded} onpick={(roll) => go(course.id, 'log', { roll })} /></div>
   {/if}

@@ -69,11 +69,11 @@ Per course spreadsheet: `Log` (id, ts, date, roll, problem, action, ref, by, bat
 
 ## Sharing a course
 
-Course > Invite a TA shares the Sheet as editor. They open the course link (`#/c/<id>`) and pick the file once in the Google Picker. Students get no access; use "Share" on a roll to send a plain-text summary instead.
+Manage > Invite a TA shares the Sheet as editor. They open the course link (`#/c/<id>`) and pick the file once in the Google Picker. Students get no access; use "Share" on a roll to send a plain-text summary instead.
 
 ## Conflicts
 
-Events are unioned by id. An `undo` cancels only the `done` ids it references. A `done` made concurrently (on another device that the undo did not see) wins, and the cell shows up in Course > Conflicts inbox.
+Events are unioned by id. An `undo` cancels only the `done` ids it references. A `done` made concurrently (on another device that the undo did not see) wins, and the cell shows up in Manage > Conflicts inbox.
 
 ## Legacy
 

@@ -21,7 +21,7 @@
   } as Record<K, string>)[kind]);
 </script>
 {#if app.course}
-  <button class="btn {kind === 'conflict' ? '!border-hush-yellow' : ''}" title={s.error || aria} aria-label={aria} onclick={() => go(app.course!.id, 'course')}>
+  <button class="btn {kind === 'conflict' ? '!border-hush-yellow' : ''}" title={s.error || aria} aria-label={aria} onclick={() => go(app.course!.id, 'manage')}>
     {#if kind === 'conflict'}<TriangleAlert aria-hidden="true" />{app.conflicts.length}
     {:else if kind === 'local'}<HardDrive aria-hidden="true" /><span>Local</span>
     {:else if kind === 'reconnect'}<KeyRound aria-hidden="true" /><span>Reconnect</span>
