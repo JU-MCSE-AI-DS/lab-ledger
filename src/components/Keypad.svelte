@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { app } from '../lib/app.svelte';
   import { Delete } from '@lucide/svelte';
   let { rolls, onpick }: { rolls: string[]; onpick: (roll: string) => void } = $props();
   let value = $state('');
@@ -21,7 +22,7 @@
   </div>
   <div class="flex gap-1.5 mb-2 min-h-9 flex-wrap">
     {#each matches as m}
-      <button class="btn btn-sm mono {m === exact ? 'border-accent text-accent' : ''}" onclick={() => { onpick(m); value = ''; }}>{m}</button>
+      <button class="btn btn-sm mono {m === exact ? 'border-accent text-accent' : ''}" onclick={() => { onpick(m); value = ''; }}>{m}{#if app.stagedRolls.has(m)}<span class="size-2 rounded-full bg-hush-yellow" title="Unsaved changes"><span class="sr-only">unsaved changes</span></span>{/if}</button>
     {/each}
     {#if value && !matches.length}<span class="muted text-sm py-1.5">No such roll</span>{/if}
   </div>

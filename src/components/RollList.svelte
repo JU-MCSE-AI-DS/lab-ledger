@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { app } from '../lib/app.svelte';
   import type { RollStat } from '../lib/stats';
   let { stats, selected, onpick }: { stats: RollStat[]; selected: string | null; onpick: (r: string) => void } = $props();
   let q = $state('');
@@ -23,8 +24,9 @@
   <ul class="flex-1 overflow-auto">
     {#each list as s (s.roll)}
       <li>
-        <button data-roll={s.roll} class="w-full flex items-center gap-3 px-3 py-2 text-left transition-colors duration-[120ms] border-b border-hush-border {selected === s.roll ? 'bg-accent/15 text-accent' : 'hover:bg-hush-surface'}" aria-current={selected === s.roll ? 'true' : undefined} onclick={() => onpick(s.roll)}>
+        <button data-roll={s.roll} class="relative w-full flex items-center gap-3 px-3 py-2 text-left transition-colors duration-[120ms] border-b border-hush-border {selected === s.roll ? 'bg-accent/15 text-accent' : 'hover:bg-hush-surface'}" aria-current={selected === s.roll ? 'true' : undefined} onclick={() => onpick(s.roll)}>
           <span class="mono w-10 font-semibold">{s.roll}</span>
+          {#if app.stagedRolls.has(s.roll)}<span class="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-hush-yellow" title="Unsaved changes"><span class="sr-only">unsaved changes</span></span>{/if}
           <span class="flex-1 h-2 rounded bg-hush-overlay overflow-hidden"><span data-arrive class="bar-fill block h-full bg-hush-green" style="width:{Math.round(s.pct * 100)}%"></span></span>
           <span data-arrive class="mono text-xs {selected === s.roll ? '' : 'muted'} w-14 text-right">{s.done}/{s.total}</span>
         </button>

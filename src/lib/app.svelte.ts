@@ -162,6 +162,13 @@ class App {
     for (const o of ops) this.setEffective(o.roll, o.a, o.p, !o.undo);
   }
   discard() { this.staged = {}; }
+  discardRoll(roll: string) {
+    const pre = `${roll}|`;
+    this.staged = Object.fromEntries(Object.entries(this.staged).filter(([k]) => !k.startsWith(pre)));
+  }
+  unstage(roll: string, a: number, p: number) { this.setEffective(roll, a, p, this.isDone(roll, a, p)); }
+  /** Rolls that have unsaved staged changes. */
+  stagedRolls = $derived(new Set(Object.keys(this.staged).map((k) => k.slice(0, k.lastIndexOf('|')))));
   async saveStaged() {
     const ops: Op[] = Object.entries(this.staged).map(([k, v]) => {
       const m = /^(.*)\|(\d+)\.(\d+)$/.exec(k)!;

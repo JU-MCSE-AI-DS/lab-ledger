@@ -6,7 +6,8 @@
   import Keypad from '../components/Keypad.svelte';
   import RollList from '../components/RollList.svelte';
   import ChipPanel from '../components/ChipPanel.svelte';
-  import { Undo2, Check } from '@lucide/svelte';
+  import { Undo2, Check, ChevronUp, ChevronDown } from '@lucide/svelte';
+  import StagedBreakdown from '../components/StagedBreakdown.svelte';
   import NotationBar from '../components/NotationBar.svelte';
   import { slide } from 'svelte/transition';
   import { dur, ease } from '../lib/motion';
@@ -19,6 +20,8 @@
   const sel = $derived(selected ? stats.find((s) => s.roll === selected) : null);
   const staged = $derived(app.stagedCounts.add + app.stagedCounts.remove);
   const dateLabel = $derived(new Date(app.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
+  let breakdown = $state(false);
+  $effect(() => { if (staged === 0) breakdown = false; });
   function pick(r: string) { selected = r; keypadOpen = false; }
 </script>
 
@@ -39,11 +42,17 @@
       {/if}
     </div>
     {#if staged > 0}
-      <div transition:slide={{ duration: dur(180), easing: ease }} class="no-print shrink-0 bg-hush-surface border-t border-hush-border px-3 py-2 flex items-center gap-2" data-testid="savebar">
-        <span class="mono font-semibold flex gap-2" data-testid="diff-badge">{#if app.stagedCounts.add}<span class="text-hush-green">+{app.stagedCounts.add}</span>{/if}{#if app.stagedCounts.remove}<span class="text-hush-red">−{app.stagedCounts.remove}</span>{/if}</span>
-        {#if app.notToday}<span class="text-sm mono text-hush-yellow">for {dateLabel}</span>{/if}
-        <button class="btn ml-auto" onclick={() => app.discard()}><Undo2 aria-hidden="true" />Discard</button>
-        <button class="btn btn-primary" onclick={() => app.saveStaged()}><Check aria-hidden="true" />Save</button>
+      <div transition:slide={{ duration: dur(180), easing: ease }} class="shrink-0">
+        <StagedBreakdown bind:open={breakdown} {selected} onpick={pick} />
+        <div class="no-print bg-hush-surface border-t border-hush-border px-3 py-2 flex items-center gap-2" data-testid="savebar">
+          <button class="mono font-semibold flex items-center gap-2 rounded px-1 -mx-1 hover:bg-hush-overlay" data-testid="diff-badge" aria-expanded={breakdown} aria-controls="staged-breakdown" title="Staged changes breakdown" onclick={() => (breakdown = !breakdown)}>
+            {#if app.stagedCounts.add}<span class="text-hush-green">+{app.stagedCounts.add}</span>{/if}{#if app.stagedCounts.remove}<span class="text-hush-red">−{app.stagedCounts.remove}</span>{/if}
+            {#if breakdown}<ChevronDown class="size-4 muted" aria-hidden="true" />{:else}<ChevronUp class="size-4 muted" aria-hidden="true" />{/if}
+          </button>
+          {#if app.notToday}<span class="text-sm mono text-hush-yellow">for {dateLabel}</span>{/if}
+          <button class="btn ml-auto" onclick={() => { breakdown = false; app.discard(); }}><Undo2 aria-hidden="true" />Discard</button>
+          <button class="btn btn-primary" onclick={() => { breakdown = false; app.saveStaged(); }}><Check aria-hidden="true" />Save</button>
+        </div>
       </div>
     {/if}
   </div>
