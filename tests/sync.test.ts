@@ -8,7 +8,7 @@ let gate: Promise<void> = Promise.resolve();
 
 vi.mock('../src/lib/store', () => ({
   kvGet: async (k: string) => kv.get(k),
-  kvSet: async (k: string, v: unknown) => { kv.set(k, v); },
+  kvSet: async (k: string, v: unknown) => { kv.set(k, structuredClone(v)); }, // IndexedDB clones (and rejects proxies)
   outboxIds: async () => [],
   loadEvents: async () => [],
   clearOutbox: async () => {}
@@ -35,7 +35,9 @@ import { syncNow } from '../src/lib/sync';
 beforeEach(() => {
   vi.stubGlobal('navigator', { onLine: true });
   kv.clear(); written.length = 0; remote.rolls = [{ roll: '1', active: true }]; gate = Promise.resolve();
-  app.courses = [{ id: 'g1', kind: 'google', title: 'T', created: '', rolls: [{ roll: '1', active: true }, { roll: '2', active: true }], assignments: [] }];
+  // Proxies stand in for Svelte $state, which structuredClone/IndexedDB refuse.
+  const deep = <T extends object>(o: T): T => new Proxy(o, { get: (t, k) => { const v = Reflect.get(t, k); return v && typeof v === 'object' ? deep(v) : v; } });
+  app.courses = [deep({ id: 'g1', kind: 'google', title: 'T', created: '', rolls: [{ roll: '1', active: true }, { roll: '2', active: true }], assignments: [{ id: 1, title: 'A1', problems: 3, active: true }] })];
   kv.set('cfgdirty:g1', true);
 });
 
@@ -57,6 +59,12 @@ describe('doSync config handling', () => {
     await syncNow('g1');
     expect(written.at(-1).rolls.map((r: any) => r.roll)).toEqual(['1', '2', '3']);
     expect(kv.get('cfgdirty:g1')).toBe(false);
+  });
+
+  it('stores the merged config base without tripping on state proxies', async () => {
+    await syncNow('g1');
+    expect(app.syncState.status).toBe('idle');
+    expect((kv.get('cfgbase:g1') as any).assignments.map((a: any) => a.id)).toEqual([1]);
   });
 
   it('a failed config write leaves the course dirty', async () => {

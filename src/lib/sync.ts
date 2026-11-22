@@ -62,7 +62,8 @@ async function doSync(id: string, full: boolean) {
   set({ status: 'syncing', error: '' });
   try {
     await auth.getToken(false);
-    const course = app.courses.find((c) => c.id === id)!;
+    // Plain copy: the merge reuses its roll/assignment objects, and IndexedDB can't clone Svelte's state proxies.
+    const course = JSON.parse(JSON.stringify(app.courses.find((c) => c.id === id)!)) as typeof app.courses[number];
 
     // Config goes before the log so a roll/assignment added offline exists in the Sheet before its events do.
     if (await store.kvGet<boolean>(dirtyKey(id))) {
