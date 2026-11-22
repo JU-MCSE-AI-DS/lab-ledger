@@ -1,7 +1,6 @@
 // Pure: turn user intent (ops) into log events, and revert a batch.
-import { type LogEvent, type Course, uuid, problemId, parseProblem } from './model';
+import { type LogEvent, uuid, problemId, parseProblem, cellKey } from './model';
 import type { Folded } from './fold';
-import { cellKey } from './fold';
 import type { Op } from './notation';
 
 export interface Ctx {
@@ -64,8 +63,10 @@ export function highestLogged(events: LogEvent[], a: number): number {
   return m;
 }
 
-export function validateAssignmentChange(course: Course, events: LogEvent[], a: number, problems: number): string | null {
-  if (!Number.isInteger(problems) || problems < 1) return 'Problem count must be a positive whole number';
+export const isPositiveInt = (n: number) => Number.isInteger(n) && n >= 1;
+
+export function validateAssignmentChange(events: LogEvent[], a: number, problems: number): string | null {
+  if (!isPositiveInt(problems)) return 'Problem count must be a positive whole number';
   const hi = highestLogged(events, a);
   if (problems < hi) return `Cannot shrink below highest logged problem (${hi})`;
   return null;

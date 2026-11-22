@@ -1,19 +1,18 @@
 <script lang="ts">
   import type { Folded } from '../lib/fold';
-  import type { Assignment } from '../lib/model';
+  import { cellKey, type Assignment } from '../lib/model';
   import { ddmmyyyy } from '../lib/views';
   let { a, rolls, folded, transpose = false, size = 26, onpick }: {
     a: Assignment; rolls: string[]; folded: Folded; transpose?: boolean; size?: number;
     onpick?: (roll: string, p: number) => void;
   } = $props();
   const probs = $derived(Array.from({ length: a.problems }, (_, i) => i + 1));
-  const done = (r: string, p: number) => folded.cells.get(`${r}|${a.id}.${p}`)?.done;
 </script>
 
 {#snippet cell(r: string, p: number)}
-  {@const c = folded.cells.get(`${r}|${a.id}.${p}`)}
+  {@const c = folded.cells.get(cellKey(r, a.id, p))}
   <td class="p-px">
-    <button class="block rounded-sm {c?.done ? 'hm-done' : 'hm-miss'}" style="width:{size}px;height:{size}px" data-cell="{r}|{a.id}.{p}" data-done={c?.done ? 1 : 0}
+    <button class="block rounded-sm {c?.done ? 'hm-done' : 'hm-miss'}" style="width:{size}px;height:{size}px" data-cell={cellKey(r, a.id, p)} data-done={c?.done ? 1 : 0}
       aria-label="Roll {r} problem {a.id}.{p} {c?.done ? 'done ' + ddmmyyyy(c.date ?? '') : 'missing'}" onclick={() => onpick?.(r, p)}></button>
   </td>
 {/snippet}

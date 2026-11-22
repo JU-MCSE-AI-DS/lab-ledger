@@ -3,7 +3,7 @@
   import { go } from '../lib/router.svelte';
   import { activeAssignments } from '../lib/model';
   import { runQuery } from '../lib/query';
-  import { shareText } from '../lib/share';
+  import { shareRoll } from '../lib/share';
   import { Share2, Copy } from '@lucide/svelte';
 
   const course = $derived(app.course!);
@@ -33,10 +33,7 @@
   const result = $derived(runQuery(text, course, app.folded, app.today));
   const listText = $derived(result.rows.map((r) => `${r.roll}: ${r.text}`).join('\n'));
   async function copy() { await navigator.clipboard.writeText(listText); app.flash('Copied'); }
-  async function share(roll: string) {
-    const t = shareText(course, app.folded, roll);
-    try { if (navigator.share) await navigator.share({ text: t }); else { await navigator.clipboard.writeText(t); app.flash('Copied summary'); } } catch {}
-  }
+  async function share(roll: string) { if (await shareRoll(course, app.folded, roll)) app.flash('Copied summary'); }
 </script>
 
 <div class="p-3 space-y-3 max-w-3xl mx-auto">

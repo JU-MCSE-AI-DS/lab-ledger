@@ -75,8 +75,10 @@ export function buildHistory(events: readonly LogEvent[], filter: HistoryFilter 
       undone, events: evs
     });
   }
-  // stable newest-first (ties keep later-inserted groups first)
-  return out.map((e, i) => [e, i] as const).sort((a, b) => (a[0].ts < b[0].ts ? 1 : a[0].ts > b[0].ts ? -1 : b[1] - a[1])).map((x) => x[0]);
+  // newest first; ties keep later-inserted groups first
+  const indexed = out.map((entry, i) => ({ entry, i }));
+  indexed.sort((a, b) => (a.entry.ts < b.entry.ts ? 1 : a.entry.ts > b.entry.ts ? -1 : b.i - a.i));
+  return indexed.map((x) => x.entry);
 }
 
 /** Latest undo of a cell, if any. */
@@ -109,6 +111,8 @@ export function formatDay(date: string): string {
   const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(date);
   return m ? `${Number(m[2])} ${MONTHS[Number(m[1]) - 1]}` : date;
 }
+/** "2026-11-18" -> locale short day, e.g. "18 Nov" */
+export const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 /** ISO ts -> local "20 Nov 14:02" */
 export function formatStamp(ts: string): string {
   const d = new Date(ts);
@@ -153,9 +157,6 @@ export function describeEntry(e: HistoryEntry, maxSegments = 3): string {
   return `undo ${what}${parts.length ? ` (logged by ${parts.join(', ')})` : ''}`;
 }
 
-export function formatEntry(e: HistoryEntry): string {
-  return `${formatStamp(e.ts)} · ${e.by} · ${describeEntry(e)}`;
-}
 
 /** Build a filter from URL-ish string values (invalid bits are reported, not applied). */
 export function filterFromStrings(v: { roll?: string; problem?: string; by?: string; since?: string; until?: string }, today: string): { filter: HistoryFilter; errors: string[] } {

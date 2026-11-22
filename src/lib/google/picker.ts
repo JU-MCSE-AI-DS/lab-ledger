@@ -3,7 +3,7 @@ import { auth, loadGapi } from './auth.svelte';
 
 /** Opens the Google Picker (spreadsheets only). Optionally prefiltered to one file id. Resolves to the picked id or null. */
 export async function pickSpreadsheet(fileId?: string): Promise<string | null> {
-  const token = await auth.interactiveToken();
+  const token = await auth.getToken(true);
   await loadGapi();
   await new Promise<void>((res) => gapi.load('picker', () => res()));
   return new Promise((resolve) => {

@@ -1,14 +1,16 @@
 import { fold } from './fold';
-import { type Assignment, type Course, type LogEvent, uuid } from './model';
+import { type Assignment, type Course, type LogEvent, uuid, cellKey, parseCellKey } from './model';
 import type { Op } from './notation';
 import { parseRolls } from './notation';
-import { buildEvents, revertEvents, validateAssignmentChange, rollsWithHistory } from './ops';
+import { buildEvents, revertEvents, validateAssignmentChange, rollsWithHistory, isPositiveInt } from './ops';
+import { shortDate } from './history';
+import { applyTheme } from './theme';
 import * as store from './store';
 import { router } from './router.svelte';
 import * as sync from './sync';
 
 export type Theme = 'system' | 'light' | 'dark';
-export interface Toast { msg: string; batch: LogEvent[]; until: number; id: number; undo?: () => Promise<void> }
+export interface Toast { msg: string; batch: LogEvent[]; id: number; undo?: () => Promise<void> }
 export interface SyncState {
   status: 'idle' | 'syncing' | 'offline' | 'reconnect' | 'error';
   pending: number;
@@ -23,6 +25,14 @@ export function localToday(): string {
 
 const ls = (k: string, d = '') => (typeof localStorage !== 'undefined' ? localStorage.getItem(k) ?? d : d);
 
+function deviceId() {
+  const saved = ls('ll.device');
+  if (saved) return saved;
+  const fresh = uuid().slice(0, 8);
+  localStorage.setItem('ll.device', fresh);
+  return fresh;
+}
+
 class App {
   courses = $state<Course[]>([]);
   ready = $state(false);
@@ -31,7 +41,7 @@ class App {
   theme = $state<Theme>(ls('ll.theme', 'system') as Theme);
   dateOverride = $state<string | null>(ls('ll.date') || null);
   email = $state(ls('ll.email', 'me@local'));
-  device = ls('ll.device') || (() => { const d = uuid().slice(0, 8); localStorage.setItem('ll.device', d); return d; })();
+  device = deviceId();
   staged = $state<Record<string, 'add' | 'remove'>>({});
   toast = $state<Toast | null>(null);
   dismissed = $state<string[]>(JSON.parse(ls('ll.dismissed', '[]')));
@@ -43,6 +53,7 @@ class App {
   course = $derived(this.courses.find((c) => c.id === router.courseId) ?? null);
   folded = $derived(fold(this.events));
   date = $derived(this.dateOverride ?? this.today);
+  dateLabel = $derived(shortDate(this.date));
   notToday = $derived(this.dateOverride !== null && this.dateOverride !== this.today);
   conflicts = $derived(this.folded.conflicts.filter((c) => !this.dismissed.includes(c.key)));
   stagedCounts = $derived.by(() => {
@@ -89,6 +100,8 @@ class App {
   }
 
   async saveCourse(c: Course, cfgNote?: string) {
+    // Dirty before the course is stored, so a concurrent sync can't see new config with a clean flag and overwrite it.
+    if (c.kind === 'google') await store.kvSet(`cfgdirty:${c.id}`, true);
     await store.putCourse(c);
     this.courses = this.courses.map((x) => (x.id === c.id ? c : x));
     if (cfgNote) {
@@ -127,7 +140,7 @@ class App {
   }
 
   flash(msg: string, batch: LogEvent[] = [], undo?: () => Promise<void>) {
-    this.toast = { msg, batch, undo, until: Date.now() + 5000, id: ++this.toastSeq };
+    this.toast = { msg, batch, undo, id: ++this.toastSeq };
     const id = this.toast.id;
     setTimeout(() => { if (this.toast?.id === id) this.toast = null; }, batch.length || undo ? 5000 : 2200);
   }
@@ -143,15 +156,15 @@ class App {
   }
 
   // ---- staging ----
-  stagedState(roll: string, a: number, p: number): 'add' | 'remove' | undefined { return this.staged[`${roll}|${a}.${p}`]; }
-  isDone(roll: string, a: number, p: number) { return !!this.folded.cells.get(`${roll}|${a}.${p}`)?.done; }
+  stagedState(roll: string, a: number, p: number): 'add' | 'remove' | undefined { return this.staged[cellKey(roll, a, p)]; }
+  isDone(roll: string, a: number, p: number) { return !!this.folded.cells.get(cellKey(roll, a, p))?.done; }
   /** Effective state after staging. */
   effective(roll: string, a: number, p: number) {
     const s = this.stagedState(roll, a, p);
     return s === 'add' ? true : s === 'remove' ? false : this.isDone(roll, a, p);
   }
   setEffective(roll: string, a: number, p: number, want: boolean) {
-    const k = `${roll}|${a}.${p}`;
+    const k = cellKey(roll, a, p);
     const actual = this.isDone(roll, a, p);
     const next = { ...this.staged };
     if (want === actual) delete next[k]; else next[k] = want ? 'add' : 'remove';
@@ -170,10 +183,7 @@ class App {
   /** Rolls that have unsaved staged changes. */
   stagedRolls = $derived(new Set(Object.keys(this.staged).map((k) => k.slice(0, k.lastIndexOf('|')))));
   async saveStaged() {
-    const ops: Op[] = Object.entries(this.staged).map(([k, v]) => {
-      const m = /^(.*)\|(\d+)\.(\d+)$/.exec(k)!;
-      return { roll: m[1], a: Number(m[2]), p: Number(m[3]), undo: v === 'remove' };
-    });
+    const ops: Op[] = Object.entries(this.staged).map(([k, v]) => ({ ...parseCellKey(k)!, undo: v === 'remove' }));
     this.staged = {};
     await this.commit(ops);
   }
@@ -223,7 +233,7 @@ class App {
   }
   async addAssignment(title: string, problems: number): Promise<string | null> {
     const c = this.course; if (!c) return 'No course';
-    if (!Number.isInteger(problems) || problems < 1) return 'Problem count must be a positive whole number';
+    if (!isPositiveInt(problems)) return 'Problem count must be a positive whole number';
     const next = structuredClone($state.snapshot(c)) as Course;
     const id = Math.max(0, ...next.assignments.map((a) => a.id)) + 1;
     next.assignments.push({ id, title: title.trim() || `Assignment ${id}`, problems, active: true });
@@ -233,7 +243,7 @@ class App {
   async updateAssignment(id: number, patch: Partial<Pick<Assignment, 'title' | 'problems' | 'active'>>): Promise<string | null> {
     const c = this.course; if (!c) return 'No course';
     if (patch.problems !== undefined) {
-      const err = validateAssignmentChange(c, this.events, id, patch.problems);
+      const err = validateAssignmentChange(this.events, id, patch.problems);
       if (err) return err;
     }
     const next = structuredClone($state.snapshot(c)) as Course;
@@ -253,29 +263,4 @@ class App {
   }
 }
 
-export function applyTheme(t: Theme) {
-  const el = document.documentElement;
-  if (t === 'system') el.removeAttribute('data-theme'); else el.setAttribute('data-theme', t);
-  void syncFavicon(t);
-}
-
-/** icon.svg follows the OS scheme; an explicit app theme pins its light media query on or off. */
-let faviconSrc: Promise<string> | null = null;
-async function syncFavicon(t: Theme) {
-  const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-  if (!link) return;
-  const url = `${import.meta.env.BASE_URL}icon.svg`;
-  if (t === 'system') { link.href = url; return; }
-  faviconSrc ??= fetch(url).then((r) => r.text());
-  const src = await faviconSrc.catch(() => { faviconSrc = null; return null; });
-  if (!src || document.documentElement.getAttribute('data-theme') !== t) return; // failed, or theme changed meanwhile
-  const svg = src.replace('(prefers-color-scheme: light)', t === 'light' ? 'all' : 'not all');
-  link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
 export const app = new App();
-
-/** Confirm removing a course from this device (shared by Home and Course pages). */
-export function confirmRemoveCourse(c: { title: string; kind: string }): boolean {
-  return confirm(`Remove "${c.title}" from this device?${c.kind === 'google' ? ' The Google Sheet is not deleted.' : ' Local data will be lost.'}`);
-}

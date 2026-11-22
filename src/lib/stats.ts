@@ -1,5 +1,5 @@
-import { type Course, activeAssignments, activeRolls } from './model';
-import { cellKey, type Folded } from './fold';
+import { type Course, activeAssignments, activeRolls, cellKey } from './model';
+import type { Folded } from './fold';
 
 export interface AssignmentProgress { a: number; done: number; total: number; missing: number[] }
 export interface RollStat {

@@ -101,9 +101,9 @@ describe('ops', () => {
   it('cannot shrink below highest logged', () => {
     const c = makeCourse();
     const evs = [ev({ action: 'done', problem: '1.5' })];
-    expect(validateAssignmentChange(c, evs, 1, 4)).toMatch(/highest logged/);
-    expect(validateAssignmentChange(c, evs, 1, 5)).toBeNull();
-    expect(validateAssignmentChange(c, evs, 1, 0)).toBeTruthy();
+    expect(validateAssignmentChange(evs, 1, 4)).toMatch(/highest logged/);
+    expect(validateAssignmentChange(evs, 1, 5)).toBeNull();
+    expect(validateAssignmentChange(evs, 1, 0)).toBeTruthy();
   });
 });
 

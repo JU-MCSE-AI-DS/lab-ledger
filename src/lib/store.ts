@@ -38,7 +38,7 @@ export async function deleteCourse(id: string) {
     const idx = tx.objectStore(name).index('byCourse');
     for (const k of await idx.getAllKeys(id)) await tx.objectStore(name).delete(k);
   }
-  await tx.objectStore('kv').delete(`cursor:${id}`);
+  for (const k of ['cursor', 'cfgdirty', 'cfgbase']) await tx.objectStore('kv').delete(`${k}:${id}`);
   await tx.done;
 }
 

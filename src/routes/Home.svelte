@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { app, confirmRemoveCourse } from '../lib/app.svelte';
+  import { app } from '../lib/app.svelte';
+  import { confirmRemoveCourse } from '../lib/confirm';
   import { hold } from '../lib/hold';
+  import { isPositiveInt } from '../lib/ops';
   import type { Course } from '../lib/model';
-  import { go, router } from '../lib/router.svelte';
+  import { go, router, COURSE_ID } from '../lib/router.svelte';
   import { demoCourse, demoEvents, localCourse } from '../lib/demo';
   import { googleEnabled } from '../lib/google/config';
   import { auth } from '../lib/google/auth.svelte';
@@ -32,7 +34,7 @@
   // arrived via a course link that is not on this device
   const missingId = $derived(router.courseId && !app.courses.some((c) => c.id === router.courseId) ? router.courseId : null);
 
-  async function removeOne(c: Course) { if (confirmRemoveCourse(c)) await app.removeCourse(c.id); }
+  async function removeOne(c: Course) { if (await confirmRemoveCourse(c)) await app.removeCourse(c.id); }
   async function startDemo() {
     const c = demoCourse();
     await app.addCourse(c, demoEvents(c, app.today));
@@ -43,7 +45,7 @@
     try {
       const asg = rows.map((r, i) => ({ id: i + 1, title: r.title.trim() || `Assignment ${i + 1}`, problems: Number(r.problems) }));
       if (!title.trim()) throw new Error('Give the course a title');
-      if (asg.some((a) => !Number.isInteger(a.problems) || a.problems < 1)) throw new Error('Each assignment needs a positive problem count');
+      if (asg.some((a) => !isPositiveInt(a.problems))) throw new Error('Each assignment needs a positive problem count');
       const base = localCourse(title.trim(), rolls, asg);
       if (!base.rolls.length) throw new Error('Could not read roll list (e.g. 1-58, 102)');
       const c = where === 'google' ? await createRemoteCourse(base) : base;
@@ -60,6 +62,7 @@
     const m = /\/c\/([^/?#]+)/.exec(linkText) ?? /^([\w-]{20,})$/.exec(linkText.trim());
     if (!m) { msg = 'Paste a course link'; return; }
     const id = decodeURIComponent(m[1]);
+    if (!COURSE_ID.test(id)) { msg = 'Bad course link'; return; }
     if (app.courses.some((c) => c.id === id)) go(id); else pick(id);
   }
 </script>

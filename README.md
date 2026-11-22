@@ -77,4 +77,4 @@ Events are unioned by id. An `undo` cancels only the `done` ids it references. A
 
 ## Legacy
 
-`legacy/` holds the old Python scripts and xlsx files (and a `.env`, which is git-ignored). Nothing imports them.
+The old Python scripts this app replaced were removed from the tree; they live in git history (`legacy/main.py`, `legacy/fetch.py`). Untracked xlsx/.env files may remain in a local `legacy/` folder.

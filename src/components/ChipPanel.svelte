@@ -1,8 +1,8 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
   import { activeAssignments, type Course } from '../lib/model';
-  import { shareText } from '../lib/share';
-  import { HOLD_MS } from '../lib/hold';
+  import { shareRoll } from '../lib/share';
+  import { hold } from '../lib/hold';
   import type { RollStat } from '../lib/stats';
   import { Share2, Hash, ChevronRight, Check, CheckCheck } from '@lucide/svelte';
   import { slide } from 'svelte/transition';
@@ -21,12 +21,8 @@
   });
   let open = $state<Record<number, boolean>>({});
   let anchor = $state<{ a: number; p: number } | null>(null);
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  let longFired = false;
   let drag = $state<{ a: number; p: number; end: number } | null>(null);
   let dragged = $state(false);
-
-  $effect(() => { roll; anchor = null; open = {}; });
 
   // chips just marked by the user get a one-shot pop (never on render)
   let fresh = $state<Record<string, true>>({});
@@ -40,17 +36,15 @@
   }
 
   function down(a: number, p: number) {
-    longFired = false; dragged = false; drag = { a, p, end: p };
-    timer = setTimeout(() => { longFired = true; anchor = { a, p }; navigator.vibrate?.(15); }, HOLD_MS);
+    dragged = false; drag = { a, p, end: p };
   }
-  function up() { if (timer) clearTimeout(timer); timer = null; }
   function move(e: PointerEvent) {
     if (!drag) return;
     const c = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-chip]');
     const [a, p] = c?.dataset.chip?.split('.').map(Number) ?? [];
     if (a !== drag.a || p === drag.end) return;
     drag.end = p;
-    if (p !== drag.p) { dragged = true; up(); anchor = null; }
+    if (p !== drag.p) { dragged = true; anchor = null; }
   }
   function release() {
     if (drag && dragged && drag.end !== drag.p) {
@@ -58,11 +52,10 @@
       for (let q = Math.min(drag.p, drag.end); q <= Math.max(drag.p, drag.end); q++) app.setEffective(roll, drag.a, q, want);
       mark(drag.a, drag.p, drag.end);
     }
-    drag = null; up();
+    drag = null;
   }
-  function cancel() { drag = null; dragged = false; up(); }
+  function cancel() { drag = null; dragged = false; }
   function tap(a: number, p: number) {
-    if (longFired) { longFired = false; return; }
     if (dragged) { dragged = false; return; }
     if (anchor && anchor.a === a) {
       const want = !app.effective(roll, a, anchor.p);
@@ -76,11 +69,7 @@
     }
   }
   function fill(a: number, total: number) { for (let p = 1; p <= total; p++) app.setEffective(roll, a, p, true); mark(a, 1, total); }
-  async function share() {
-    const text = shareText(course, app.folded, roll);
-    try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); app.flash('Copied summary'); } }
-    catch { /* cancelled */ }
-  }
+  async function share() { if (await shareRoll(course, app.folded, roll)) app.flash('Copied summary'); }
 </script>
 <svelte:window onpointermove={move} onpointerup={release} onpointercancel={cancel} />
 <div class="p-3 space-y-3">
@@ -114,7 +103,7 @@
               data-chip="{a.id}.{p}"
               title={a.problemTitles?.[p - 1] ?? `${a.id}.${p}`}
               onpointerdown={() => down(a.id, p)}
-              oncontextmenu={(e) => e.preventDefault()}
+              use:hold={() => { anchor = { a: a.id, p }; }}
               onclick={() => tap(a.id, p)}>{p}</button>
           {/each}
         </div>

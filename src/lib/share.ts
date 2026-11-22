@@ -10,3 +10,13 @@ export function shareText(course: Course, f: Folded, roll: string): string {
   );
   return `Roll ${roll} — ${parts.join(' · ') || 'no assignments'}`;
 }
+
+/** Share via the OS sheet, else copy. Resolves true when copied to the clipboard (caller may flash). */
+export async function shareRoll(course: Course, f: Folded, roll: string): Promise<boolean> {
+  const text = shareText(course, f, roll);
+  try {
+    if (navigator.share) { await navigator.share({ text }); return false; }
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch { return false; /* cancelled */ }
+}

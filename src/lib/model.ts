@@ -37,7 +37,12 @@ export interface Course {
 
 export const LOG_HEADERS = ['id', 'ts', 'date', 'roll', 'problem', 'action', 'ref', 'by', 'batch', 'device'] as const;
 
-export const key = (roll: string, a: number, p: number) => `${roll}|${a}.${p}`;
+/** Key of one (roll, problem) cell in Folded.cells and the staged map. */
+export const cellKey = (roll: string, a: number, p: number) => `${roll}|${a}.${p}`;
+export function parseCellKey(k: string): { roll: string; a: number; p: number } | null {
+  const m = /^(.*)\|(\d+)\.(\d+)$/.exec(k);
+  return m ? { roll: m[1], a: Number(m[2]), p: Number(m[3]) } : null;
+}
 export const problemId = (a: number, p: number) => `${a}.${p}`;
 export function parseProblem(s: string): [number, number] | null {
   const m = /^(\d+)\.(\d+)$/.exec(s.trim());

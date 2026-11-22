@@ -13,7 +13,7 @@ export class HttpError extends Error {
 export async function gfetch(url: string, init: RequestInit = {}, interactive = false, retried = false): Promise<any> {
   const token = await auth.getToken(interactive);
   const r = await fetch(url, { ...init, headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}`, ...(init.body ? { 'Content-Type': 'application/json' } : {}) } });
-  if (r.status === 401 && !retried) { (auth as any).expires = 0; return gfetch(url, init, interactive, true); }
+  if (r.status === 401 && !retried) { auth.invalidate(); return gfetch(url, init, interactive, true); }
   if (r.status === 401) throw new AuthError('Session expired');
   if (!r.ok) {
     let m = r.statusText;
@@ -32,7 +32,8 @@ export async function getSheetMeta(id: string, interactive = false): Promise<{ t
 }
 
 const rollRows = (c: Course) => [['roll', 'active'], ...c.rolls.map((r) => [r.roll, r.active ? 'TRUE' : 'FALSE'])];
-const asgRows = (c: Course) => [['id', 'title', 'problems', 'problem_titles', 'active'], ...c.assignments.map((a) => [String(a.id), a.title, String(a.problems), a.problemTitles ? JSON.stringify(a.problemTitles) : '', a.active ? 'TRUE' : 'FALSE'])];
+const asgRow = (a: Assignment) => [String(a.id), a.title, String(a.problems), a.problemTitles ? JSON.stringify(a.problemTitles) : '', a.active ? 'TRUE' : 'FALSE'];
+const asgRows = (c: Course) => [['id', 'title', 'problems', 'problem_titles', 'active'], ...c.assignments.map(asgRow)];
 
 export async function createSpreadsheet(c: Course): Promise<string> {
   const j = await gfetch(BASE, {
@@ -83,6 +84,13 @@ export async function appendLog(id: string, evs: LogEvent[]) {
     const chunk = evs.slice(i, i + 400);
     await gfetch(`${BASE}/${id}/values/Log!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, { method: 'POST', body: JSON.stringify({ values: chunk.map(eventToRow) }) });
   }
+}
+
+/** Current Rolls + Assignments from the Sheet. */
+export async function readConfig(id: string) {
+  const j = await gfetch(`${BASE}/${id}/values:batchGet?ranges=Rolls&ranges=Assignments`);
+  const [rolls, asg] = j.valueRanges.map((v: any) => v.values as string[][] | undefined);
+  return parseConfig(rolls, asg);
 }
 
 /** One request: new Log rows past `cursor` (last row number already read) + current config. */

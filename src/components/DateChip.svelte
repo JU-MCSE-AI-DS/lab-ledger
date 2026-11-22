@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
   import { CalendarDays, X } from '@lucide/svelte';
-  const label = $derived(new Date(app.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
+  const label = $derived(app.dateLabel);
 </script>
 {#if app.notToday}
   <!-- Desktop only: on phones the Log view's date button carries the date (it only matters when logging). -->

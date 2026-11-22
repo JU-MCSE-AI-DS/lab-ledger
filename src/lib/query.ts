@@ -1,8 +1,8 @@
 // Query language: tokenizer + evaluator. Pure.
 //   missing 3.{5-8} r:1-30     remaining r:12      done 4.* on:2026-03-13
 //   lag>3 a:3                  by:ta@x since:-7d   sort:progress
-import { type Course, activeAssignments, activeRolls } from './model';
-import { cellKey, type Folded } from './fold';
+import { type Course, activeAssignments, activeRolls, cellKey } from './model';
+import type { Folded } from './fold';
 import { parseRolls, parseWork, formatAssignment } from './notation';
 import { computeStats } from './stats';
 

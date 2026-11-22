@@ -20,7 +20,9 @@ class Auth {
   private token = '';
   private expires = 0;
   private client: google.accounts.oauth2.TokenClient | null = null;
+  // One token request at a time; concurrent callers share it (a second popup would orphan the first promise).
   private pending: { res: (t: string) => void; rej: (e: Error) => void } | null = null;
+  private inflight: Promise<string> | null = null;
 
   private async ensureClient() {
     if (!googleEnabled) throw new AuthError('Google is not configured in this build');
@@ -41,13 +43,13 @@ class Auth {
   }
 
   private request(prompt: '' | 'consent' | 'select_account'): Promise<string> {
-    return new Promise(async (res, rej) => {
+    return (this.inflight ??= new Promise<string>(async (res, rej) => {
       try {
         const c = await this.ensureClient();
         this.pending = { res, rej };
         c.requestAccessToken({ prompt, login_hint: this.email || undefined } as any);
       } catch (e) { rej(e as Error); }
-    });
+    }).finally(() => { this.inflight = null; }));
   }
 
   /** Valid access token. Non-interactive attempts do a silent refresh and fail with AuthError ("Reconnect"). */
@@ -78,8 +80,8 @@ class Auth {
     localStorage.removeItem('ll.gemail');
   }
 
-  /** Current token without prompting (for Picker), or throws. */
-  async interactiveToken() { return this.getToken(true); }
+  /** Drop the cached token (e.g. after a 401) so the next getToken refreshes. */
+  invalidate() { this.expires = 0; }
 }
 
 export const auth = new Auth();

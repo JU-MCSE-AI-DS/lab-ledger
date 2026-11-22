@@ -1,4 +1,4 @@
-// Notation grammar (port of legacy/main.py:parse_work_done, extended).
+// Notation grammar (ported from the old Python scripts, extended).
 //   work  :=  item (sep item)*       item := [-] A.P | [-] A.{x-y,z} | [-] A.*
 //   line  :=  [rolls] work           rolls := 12,14-16,102
 // A leading "-" on a work item means "undo". Multiple lines are supported.
@@ -162,8 +162,4 @@ export function formatRuns(a: number, problems: Iterable<number>): string {
   const c = compress(problems);
   if (!c) return '';
   return c.split(',').map((r) => (/^\d+$/.test(r) ? `${a}.${r}` : `${a}.{${r}}`)).join(', ');
-}
-
-export function sortRolls(r: string[]): string[] {
-  return [...r].sort(naturalCompare);
 }

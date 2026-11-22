@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { app, confirmRemoveCourse } from '../lib/app.svelte';
+  import { app } from '../lib/app.svelte';
+  import { confirmRemoveCourse } from '../lib/confirm';
   import { hold } from '../lib/hold';
   import { go } from '../lib/router.svelte';
   import { naturalCompare } from '../lib/model';
@@ -66,7 +67,7 @@
     return run('invite', async () => { await inviteTA(course.id, invite.trim()); app.flash(`Invited ${invite.trim()}`); invite = ''; msg = ''; });
   }
   async function remove() {
-    if (!confirmRemoveCourse(course)) return;
+    if (!(await confirmRemoveCourse(course))) return;
     const id = course.id;
     go(null);
     await app.removeCourse(id);

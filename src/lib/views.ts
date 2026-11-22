@@ -1,6 +1,6 @@
 // Derived Sheet tabs: pure grids + Sheets batchUpdate requests.
-import { type Course, activeAssignments, activeRolls, naturalCompare } from './model';
-import { cellKey, type Folded } from './fold';
+import { type Course, activeAssignments, activeRolls, naturalCompare, cellKey } from './model';
+import type { Folded } from './fold';
 import { formatWorkDone } from './notation';
 
 export type Fill = 'green' | 'red' | null;
@@ -12,7 +12,6 @@ export interface Tab {
 
 export const GREEN = 'D9EAD3';
 export const RED = 'FADAD8';
-export const DERIVED_PREFIXES = ['Assignment ', 'Datewise', 'Summary'];
 export const isDerivedTitle = (t: string) => /^Assignment \d+$/.test(t) || t === 'Datewise' || t === 'Summary';
 
 export function ddmmyyyy(iso: string): string {
@@ -99,7 +98,7 @@ const rgb = (hex: string) => ({
 
 const baseFormat = { horizontalAlignment: 'CENTER', verticalAlignment: 'MIDDLE', textFormat: { fontFamily: 'JetBrains Mono', fontSize: 10 } };
 
-/** Requests that overwrite one derived tab wholesale (mirrors legacy/main.py + fetch.py:apply_formatting). */
+/** Requests that overwrite one derived tab wholesale (ported from the old Python scripts). */
 export function tabRequests(sheetId: number, tab: Tab): any[] {
   const rows = tab.values.map((row, ri) => ({
     values: row.map((v, ci) => {

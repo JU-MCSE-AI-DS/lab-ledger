@@ -1,8 +1,8 @@
 <script lang="ts">
   import { app } from '../lib/app.svelte';
   import { go } from '../lib/router.svelte';
-  import { activeAssignments, activeRolls } from '../lib/model';
-  import { latestUndo, formatDay } from '../lib/history';
+  import { activeAssignments, activeRolls, cellKey } from '../lib/model';
+  import { latestUndo, formatDay, shortDate } from '../lib/history';
   import { assignmentStats } from '../lib/stats';
   import { Grid3x3, Table2, Printer, ArrowRight, History } from '@lucide/svelte';
   import Heatmap from '../components/Heatmap.svelte';
@@ -18,8 +18,8 @@
   let picked = $state<{ roll: string; p: number } | null>(null);
   const info = $derived.by(() => {
     if (!picked || !cur) return null;
-    const c = app.folded.cells.get(`${picked.roll}|${cur.id}.${picked.p}`);
-    const date = c?.done && c.date ? new Date(c.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '';
+    const c = app.folded.cells.get(cellKey(picked.roll, cur.id, picked.p));
+    const date = c?.done && c.date ? shortDate(c.date) : '';
     const id = `${cur.id}.${picked.p}`;
     const u = c?.done ? null : latestUndo(app.events, picked.roll, id);
     return { roll: picked.roll, id, text: c?.done ? `done ${date} by ${c.by}` : u ? `undone ${formatDay(u.date)} by ${u.by}` : 'not done' };

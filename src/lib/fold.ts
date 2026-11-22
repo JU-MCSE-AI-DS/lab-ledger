@@ -1,5 +1,5 @@
 // Pure: events -> cell state + conflicts.
-import { type LogEvent, parseProblem } from './model';
+import { type LogEvent, parseProblem, cellKey } from './model';
 
 export interface Cell {
   roll: string;
@@ -25,10 +25,6 @@ export interface Conflict {
 export interface Folded {
   cells: Map<string, Cell>; // key "roll|A.P" (done cells only)
   conflicts: Conflict[];
-}
-
-export function cellKey(roll: string, a: number, p: number) {
-  return `${roll}|${a}.${p}`;
 }
 
 export function fold(events: Iterable<LogEvent>): Folded {

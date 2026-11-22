@@ -1,4 +1,4 @@
-import { naturalCompare } from './model';
+import { naturalCompare, parseCellKey } from './model';
 
 export interface StagedAssignment { a: number; problems: Array<{ p: number; kind: 'add' | 'remove' }> }
 export interface StagedRoll { roll: string; add: number; remove: number; assignments: StagedAssignment[] }
@@ -7,15 +7,14 @@ export interface StagedRoll { roll: string; add: number; remove: number; assignm
 export function stagedBreakdown(staged: Record<string, 'add' | 'remove'>): StagedRoll[] {
   const byRoll = new Map<string, StagedRoll>();
   for (const [k, kind] of Object.entries(staged)) {
-    const m = /^(.*)\|(\d+)\.(\d+)$/.exec(k);
-    if (!m) continue;
-    let r = byRoll.get(m[1]);
-    if (!r) byRoll.set(m[1], (r = { roll: m[1], add: 0, remove: 0, assignments: [] }));
+    const c = parseCellKey(k);
+    if (!c) continue;
+    let r = byRoll.get(c.roll);
+    if (!r) byRoll.set(c.roll, (r = { roll: c.roll, add: 0, remove: 0, assignments: [] }));
     kind === 'add' ? r.add++ : r.remove++;
-    const a = Number(m[2]);
-    let g = r.assignments.find((x) => x.a === a);
-    if (!g) r.assignments.push((g = { a, problems: [] }));
-    g.problems.push({ p: Number(m[3]), kind });
+    let g = r.assignments.find((x) => x.a === c.a);
+    if (!g) r.assignments.push((g = { a: c.a, problems: [] }));
+    g.problems.push({ p: c.p, kind });
   }
   const out = [...byRoll.values()].sort((x, y) => naturalCompare(x.roll, y.roll));
   for (const r of out) {

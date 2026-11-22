@@ -19,7 +19,6 @@
   const rolls = $derived(activeRolls(course));
   const sel = $derived(selected ? stats.find((s) => s.roll === selected) : null);
   const staged = $derived(app.stagedCounts.add + app.stagedCounts.remove);
-  const dateLabel = $derived(new Date(app.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
   let breakdown = $state(false);
   $effect(() => { if (staged === 0) breakdown = false; });
   function pick(r: string) { selected = r; keypadOpen = false; }
@@ -49,7 +48,7 @@
             {#if app.stagedCounts.add}<span class="text-hush-green">+{app.stagedCounts.add}</span>{/if}{#if app.stagedCounts.remove}<span class="text-hush-red">−{app.stagedCounts.remove}</span>{/if}
             {#if breakdown}<ChevronDown class="size-4 muted" aria-hidden="true" />{:else}<ChevronUp class="size-4 muted" aria-hidden="true" />{/if}
           </button>
-          {#if app.notToday}<span class="text-sm mono text-hush-yellow">for {dateLabel}</span>{/if}
+          {#if app.notToday}<span class="text-sm mono text-hush-yellow">for {app.dateLabel}</span>{/if}
           <button class="btn ml-auto" onclick={() => { breakdown = false; app.discard(); }}><Undo2 aria-hidden="true" />Discard</button>
           <button class="btn btn-primary" onclick={() => { breakdown = false; app.saveStaged(); }}><Check aria-hidden="true" />Save</button>
         </div>

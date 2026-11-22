@@ -27,7 +27,11 @@
   // history is a sub-screen of Manage
   const navTab = $derived(router.tab === 'history' ? 'manage' : router.tab);
   function switchCourse(e: Event) {
-    const v = (e.target as HTMLSelectElement).value;
+    const sel = e.target as HTMLSelectElement;
+    const v = sel.value;
+    // load() clears staged changes when the course changes
+    const n = Object.keys(app.staged).length;
+    if (n && !confirm(`Discard ${n} unsaved change${n === 1 ? '' : 's'}?`)) { sel.value = app.course!.id; return; }
     if (v === '__home') go(null); else go(v, router.tab);
   }
 </script>
