@@ -248,8 +248,12 @@ class App {
     }
     const next = structuredClone($state.snapshot(c)) as Course;
     const a = next.assignments.find((x) => x.id === id); if (!a) return 'Unknown assignment';
+    // Always record the problem count (like "added (N)"), plus what else changed.
+    const details = [patch.problems !== undefined && patch.problems !== a.problems ? `${a.problems} → ${patch.problems}` : `${a.problems}`];
+    if (patch.title !== undefined && patch.title !== a.title) details.push(`title: ${patch.title}`);
+    if (patch.active !== undefined && patch.active !== a.active) details.push(patch.active ? 'shown' : 'hidden');
     Object.assign(a, patch);
-    await this.saveCourse(next, `assignment ${id} updated`);
+    await this.saveCourse(next, `assignment ${id} updated (${details.join(', ')})`);
     return null;
   }
   /** Apply config pulled from the remote sheet (no outbox, no cfg event). */
