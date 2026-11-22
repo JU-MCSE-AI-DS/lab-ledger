@@ -9,7 +9,7 @@
   const printed = $derived(new Date(app.today + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }));
   const asgs = $derived(activeAssignments(course));
 </script>
-<div class="print-overlay fixed inset-0 z-50 overflow-auto bg-white text-black" style="color-scheme: light" data-testid="print-overlay">
+<div class="print-overlay fixed inset-0 z-50 overflow-auto bg-hush-bg text-hush-fg" data-theme="light" data-testid="print-overlay">
   <div class="no-print sticky top-0 z-10 flex items-center gap-2 p-2 bg-gray-100 border-b border-gray-300">
     <strong class="flex-1">Print preview</strong>
     <button class="btn !bg-white !text-black" onclick={() => window.print()}><Printer aria-hidden="true" />Print</button>

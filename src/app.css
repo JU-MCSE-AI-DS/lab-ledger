@@ -11,8 +11,9 @@
   --color-hush-muted-text: var(--hush-muted-text);
 }
 
-/* Derived tokens: no new hues, only mixes of the Material Hush palette. */
-:root {
+/* Derived tokens: no new hues, only mixes of the Material Hush palette.
+   Also declared on any [data-theme] element so a subtree pinned to a theme (the print overlay) re-derives them. */
+:root, [data-theme] {
   --accent: var(--hush-blue);
   --on-accent: var(--hush-bg);
   /* readable secondary text (>=4.5:1 on bg and surface in both themes); --hush-muted stays for decoration */
@@ -149,6 +150,8 @@ button[aria-busy="true"]:disabled { opacity: 1; }
 }
 
 .print-sheet { display: block; }
+/* Print is always light mode (data-theme="light" on the overlay), on white paper. */
+.print-overlay { --hush-bg: #fff; --hush-fg: #000; }
 @page { size: A4 landscape; margin: 10mm; }
 @media print {
   html, body, #app { height: auto; overflow: visible !important; background: #fff !important; color: #000 !important; }
